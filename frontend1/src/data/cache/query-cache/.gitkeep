@@ -1,0 +1,2 @@
+# This file ensures the query-cache directory is tracked by git
+# Query cache data will be stored here

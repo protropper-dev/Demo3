@@ -1,0 +1,221 @@
+.message-input-container {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.message-input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 24px;
+  padding: 8px;
+  transition: border-color 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message-input-wrapper:focus-within {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.message-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #495057;
+  background: transparent;
+  padding: 8px 12px;
+  min-height: 20px;
+  max-height: 120px;
+  font-family: inherit;
+}
+
+.message-textarea::placeholder {
+  color: #adb5bd;
+}
+
+.input-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+}
+
+.attach-button,
+.send-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.attach-button {
+  color: #6c757d;
+}
+
+.attach-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #495057;
+}
+
+.send-button {
+  background: #007bff;
+  color: white;
+}
+
+.send-button:hover:not(:disabled) {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+.send-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.send-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.attach-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.input-options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 0 8px;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.option-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.option-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #495057;
+}
+
+.option-toggle.active {
+  background: #007bff;
+  color: white;
+}
+
+/* File upload overlay */
+.file-input {
+  display: none;
+}
+
+/* Character counter */
+.character-counter {
+  font-size: 11px;
+  color: #6c757d;
+  margin-left: auto;
+}
+
+.character-counter.warning {
+  color: #ffc107;
+}
+
+.character-counter.error {
+  color: #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .message-input-container {
+    padding: 16px;
+  }
+  
+  .message-input-wrapper {
+    padding: 6px;
+    border-radius: 20px;
+  }
+  
+  .message-textarea {
+    font-size: 13px;
+    padding: 6px 10px;
+    max-height: 100px;
+  }
+  
+  .input-actions {
+    gap: 6px;
+    padding: 2px;
+  }
+  
+  .attach-button,
+  .send-button {
+    padding: 6px;
+  }
+  
+  .send-button svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .attach-button svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .input-options {
+    gap: 8px;
+    margin-top: 8px;
+  }
+  
+  .option-item {
+    font-size: 11px;
+  }
+  
+  .option-toggle {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-input-container {
+    padding: 12px;
+  }
+  
+  .input-options {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .option-item {
+    flex-basis: calc(50% - 3px);
+  }
+}

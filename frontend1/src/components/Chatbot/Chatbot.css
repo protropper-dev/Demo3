@@ -1,0 +1,50 @@
+.chatbot-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background: #1a1a2e;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #1a1a2e;
+}
+
+.status-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: #1a1a2e;
+  border-top: 1px solid #2d3748;
+  color: #ffffff;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .chatbot-container {
+    flex-direction: column;
+  }
+  
+  .main-content {
+    flex: 1;
+  }
+  
+  .status-panel {
+    order: -1;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 8px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-panel {
+    padding: 6px 12px;
+  }
+}

@@ -1,0 +1,1116 @@
+/* Responsive design styles for the chatbot */
+
+/* Mobile First Approach */
+
+/* Extra small devices (phones, 480px and down) */
+@media (max-width: 480px) {
+  /* Chatbot container */
+  .chatbot-container {
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .chatbot-main {
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  /* Chat header */
+  .chat-header {
+    padding: 8px 12px;
+    min-height: 50px;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .logo-section h1 {
+    font-size: 1rem;
+  }
+  
+  .model-status-indicators {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .status-indicator {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+  
+  .message-count {
+    padding: 4px 8px;
+  }
+  
+  .count-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+  
+  .knowledge-base-toggle {
+    width: 35px;
+    height: 35px;
+  }
+  
+  /* Chat messages */
+  .messages-container {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .empty-state {
+    padding: 15px 8px;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.1rem;
+  }
+  
+  .empty-state p {
+    font-size: 0.8rem;
+  }
+  
+  .suggestions {
+    max-width: 200px;
+  }
+  
+  .suggestion-item {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+  
+  /* Messages */
+  .message-content {
+    max-width: 90%;
+  }
+  
+  .message-text {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .message-meta {
+    font-size: 0.7rem;
+  }
+  
+  .avatar-circle {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .avatar-circle svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  /* Vinallama message */
+  .message-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .bot-name {
+    font-size: 0.8rem;
+  }
+  
+  .sources-toggle,
+  .progress-toggle {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+  
+  .sources-text,
+  .progress-text {
+    font-size: 0.75rem;
+  }
+  
+  .message-actions {
+    opacity: 1;
+  }
+  
+  .action-button {
+    padding: 4px;
+  }
+  
+  .action-button svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  /* Message input */
+  .message-input-container {
+    padding: 8px 12px;
+  }
+  
+  .input-wrapper {
+    padding: 4px 8px;
+    gap: 6px;
+  }
+  
+  .message-textarea {
+    font-size: 0.85rem;
+    padding: 6px 0;
+  }
+  
+  .toggle-label {
+    display: none;
+  }
+  
+  .file-upload-button,
+  .voice-input-button,
+  .send-button {
+    padding: 5px;
+  }
+  
+  .file-upload-button svg,
+  .voice-input-button svg,
+  .send-button svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .input-status-bar {
+    font-size: 0.7rem;
+  }
+  
+  /* Knowledge base */
+  .kb-header {
+    padding: 8px;
+  }
+  
+  .kb-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .kb-header p {
+    font-size: 0.8rem;
+  }
+  
+  .kb-tabs {
+    padding: 0 8px;
+  }
+  
+  .kb-tab {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+  
+  .tab-label {
+    display: none;
+  }
+  
+  /* Document upload */
+  .document-upload {
+    padding: 8px;
+  }
+  
+  .upload-icon {
+    font-size: 2rem;
+  }
+  
+  .upload-content h3 {
+    font-size: 1rem;
+  }
+  
+  .upload-content p {
+    font-size: 0.8rem;
+  }
+  
+  .upload-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  /* Document list */
+  .document-list {
+    padding: 8px;
+  }
+  
+  .list-header h3 {
+    font-size: 1rem;
+  }
+  
+  .document-item {
+    padding: 8px;
+  }
+  
+  .doc-meta {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  /* E5 vector search */
+  .e5-vector-search {
+    padding: 8px;
+  }
+  
+  .search-header h3 {
+    font-size: 1rem;
+  }
+  
+  .search-input {
+    flex-direction: column;
+  }
+  
+  .result-item {
+    padding: 8px;
+  }
+  
+  /* Model status */
+  .model-status {
+    bottom: 8px;
+    right: 8px;
+    padding: 6px;
+  }
+  
+  .status-item {
+    font-size: 0.7rem;
+  }
+  
+  /* Loading spinner */
+  .loading-spinner.small .spinner {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .loading-spinner.medium .spinner {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .loading-spinner.large .spinner {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Small devices (landscape phones, 481px to 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  /* Chatbot container */
+  .chatbot-container {
+    margin: 5px;
+  }
+  
+  .chatbot-main {
+    margin: 5px;
+    border-radius: 15px;
+  }
+  
+  /* Chat header */
+  .chat-header {
+    padding: 10px 15px;
+    min-height: 60px;
+  }
+  
+  .logo-section h1 {
+    font-size: 1.2rem;
+  }
+  
+  .model-status-indicators {
+    gap: 10px;
+  }
+  
+  .status-indicator {
+    padding: 6px 10px;
+  }
+  
+  .status-text {
+    font-size: 0.8rem;
+  }
+  
+  /* Chat messages */
+  .messages-container {
+    padding: 15px;
+    gap: 12px;
+  }
+  
+  .empty-state {
+    padding: 30px 15px;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.3rem;
+  }
+  
+  .empty-state p {
+    font-size: 0.9rem;
+  }
+  
+  .suggestions {
+    max-width: 280px;
+  }
+  
+  .suggestion-item {
+    padding: 10px 14px;
+  }
+  
+  /* Messages */
+  .message-content {
+    max-width: 80%;
+  }
+  
+  .message-text {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+  
+  .avatar-circle {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .avatar-circle svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Message input */
+  .message-input-container {
+    padding: 12px 15px;
+  }
+  
+  .input-wrapper {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  
+  .message-textarea {
+    font-size: 0.9rem;
+  }
+  
+  .toggle-slider {
+    width: 35px;
+    height: 18px;
+  }
+  
+  .toggle-slider::before {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .rag-toggle input:checked + .toggle-slider::before {
+    transform: translateX(17px);
+  }
+  
+  .file-upload-button,
+  .voice-input-button,
+  .send-button {
+    padding: 6px;
+  }
+  
+  .file-upload-button svg,
+  .voice-input-button svg,
+  .send-button svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Knowledge base */
+  .kb-header {
+    padding: 15px;
+  }
+  
+  .kb-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .kb-tabs {
+    padding: 0 15px;
+  }
+  
+  .kb-tab {
+    padding: 12px 15px;
+    font-size: 0.85rem;
+  }
+  
+  /* Document upload */
+  .document-upload {
+    padding: 15px;
+  }
+  
+  .upload-icon {
+    font-size: 2.5rem;
+  }
+  
+  .upload-content h3 {
+    font-size: 1.1rem;
+  }
+  
+  /* Document list */
+  .document-list {
+    padding: 15px;
+  }
+  
+  .list-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .document-item {
+    padding: 10px;
+  }
+  
+  /* E5 vector search */
+  .e5-vector-search {
+    padding: 15px;
+  }
+  
+  .search-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .search-input {
+    flex-direction: column;
+  }
+  
+  .result-item {
+    padding: 10px;
+  }
+  
+  /* Model status */
+  .model-status {
+    bottom: 15px;
+    right: 15px;
+    padding: 10px;
+  }
+}
+
+/* Medium devices (tablets, 769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Chatbot container */
+  .chatbot-container {
+    margin: 8px;
+  }
+  
+  .chatbot-main {
+    margin: 8px;
+    border-radius: 18px;
+  }
+  
+  /* Chat header */
+  .chat-header {
+    padding: 12px 20px;
+    min-height: 65px;
+  }
+  
+  .logo-section h1 {
+    font-size: 1.4rem;
+  }
+  
+  .model-status-indicators {
+    gap: 15px;
+  }
+  
+  .status-indicator {
+    padding: 7px 11px;
+  }
+  
+  .status-text {
+    font-size: 0.85rem;
+  }
+  
+  /* Chat messages */
+  .messages-container {
+    padding: 18px;
+    gap: 14px;
+  }
+  
+  .empty-state {
+    padding: 35px 20px;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.4rem;
+  }
+  
+  .empty-state p {
+    font-size: 0.95rem;
+  }
+  
+  .suggestions {
+    max-width: 320px;
+  }
+  
+  .suggestion-item {
+    padding: 11px 15px;
+  }
+  
+  /* Messages */
+  .message-content {
+    max-width: 75%;
+  }
+  
+  .message-text {
+    padding: 11px 15px;
+    font-size: 0.95rem;
+  }
+  
+  .avatar-circle {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .avatar-circle svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Message input */
+  .message-input-container {
+    padding: 14px 18px;
+  }
+  
+  .input-wrapper {
+    padding: 7px 11px;
+    gap: 9px;
+  }
+  
+  .message-textarea {
+    font-size: 0.95rem;
+  }
+  
+  .toggle-slider {
+    width: 38px;
+    height: 19px;
+  }
+  
+  .toggle-slider::before {
+    width: 15px;
+    height: 15px;
+  }
+  
+  .rag-toggle input:checked + .toggle-slider::before {
+    transform: translateX(19px);
+  }
+  
+  .file-upload-button,
+  .voice-input-button,
+  .send-button {
+    padding: 7px;
+  }
+  
+  .file-upload-button svg,
+  .voice-input-button svg,
+  .send-button svg {
+    width: 19px;
+    height: 19px;
+  }
+  
+  /* Knowledge base */
+  .kb-header {
+    padding: 18px;
+  }
+  
+  .kb-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .kb-tabs {
+    padding: 0 18px;
+  }
+  
+  .kb-tab {
+    padding: 13px 17px;
+    font-size: 0.9rem;
+  }
+  
+  /* Document upload */
+  .document-upload {
+    padding: 18px;
+  }
+  
+  .upload-icon {
+    font-size: 2.8rem;
+  }
+  
+  .upload-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  /* Document list */
+  .document-list {
+    padding: 18px;
+  }
+  
+  .list-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .document-item {
+    padding: 11px;
+  }
+  
+  /* E5 vector search */
+  .e5-vector-search {
+    padding: 18px;
+  }
+  
+  .search-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .result-item {
+    padding: 11px;
+  }
+  
+  /* Model status */
+  .model-status {
+    bottom: 18px;
+    right: 18px;
+    padding: 11px;
+  }
+}
+
+/* Large devices (desktops, 1025px and up) */
+@media (min-width: 1025px) {
+  /* Chatbot container */
+  .chatbot-container {
+    margin: 10px;
+  }
+  
+  .chatbot-main {
+    margin: 10px;
+    border-radius: 20px;
+  }
+  
+  /* Chat header */
+  .chat-header {
+    padding: 15px 25px;
+    min-height: 70px;
+  }
+  
+  .logo-section h1 {
+    font-size: 1.5rem;
+  }
+  
+  .model-status-indicators {
+    gap: 20px;
+  }
+  
+  .status-indicator {
+    padding: 8px 12px;
+  }
+  
+  .status-text {
+    font-size: 0.9rem;
+  }
+  
+  /* Chat messages */
+  .messages-container {
+    padding: 20px;
+    gap: 15px;
+  }
+  
+  .empty-state {
+    padding: 40px 20px;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.5rem;
+  }
+  
+  .empty-state p {
+    font-size: 1rem;
+  }
+  
+  .suggestions {
+    max-width: 300px;
+  }
+  
+  .suggestion-item {
+    padding: 12px 16px;
+  }
+  
+  /* Messages */
+  .message-content {
+    max-width: 70%;
+  }
+  
+  .message-text {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+  
+  .avatar-circle {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .avatar-circle svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Message input */
+  .message-input-container {
+    padding: 15px 20px;
+  }
+  
+  .input-wrapper {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+  
+  .message-textarea {
+    font-size: 0.95rem;
+  }
+  
+  .toggle-slider {
+    width: 40px;
+    height: 20px;
+  }
+  
+  .toggle-slider::before {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .rag-toggle input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+  }
+  
+  .file-upload-button,
+  .voice-input-button,
+  .send-button {
+    padding: 8px;
+  }
+  
+  .file-upload-button svg,
+  .voice-input-button svg,
+  .send-button svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Knowledge base */
+  .kb-header {
+    padding: 20px;
+  }
+  
+  .kb-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .kb-tabs {
+    padding: 0 20px;
+  }
+  
+  .kb-tab {
+    padding: 15px 20px;
+    font-size: 0.9rem;
+  }
+  
+  /* Document upload */
+  .document-upload {
+    padding: 20px;
+  }
+  
+  .upload-icon {
+    font-size: 3rem;
+  }
+  
+  .upload-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  /* Document list */
+  .document-list {
+    padding: 20px;
+  }
+  
+  .list-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .document-item {
+    padding: 12px;
+  }
+  
+  /* E5 vector search */
+  .e5-vector-search {
+    padding: 20px;
+  }
+  
+  .search-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .result-item {
+    padding: 12px;
+  }
+  
+  /* Model status */
+  .model-status {
+    bottom: 20px;
+    right: 20px;
+    padding: 12px;
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  /* Chatbot container */
+  .chatbot-container {
+    margin: 15px;
+  }
+  
+  .chatbot-main {
+    margin: 15px;
+    border-radius: 25px;
+  }
+  
+  /* Chat header */
+  .chat-header {
+    padding: 18px 30px;
+    min-height: 75px;
+  }
+  
+  .logo-section h1 {
+    font-size: 1.6rem;
+  }
+  
+  .model-status-indicators {
+    gap: 25px;
+  }
+  
+  .status-indicator {
+    padding: 9px 14px;
+  }
+  
+  .status-text {
+    font-size: 0.95rem;
+  }
+  
+  /* Chat messages */
+  .messages-container {
+    padding: 25px;
+    gap: 18px;
+  }
+  
+  .empty-state {
+    padding: 50px 25px;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.6rem;
+  }
+  
+  .empty-state p {
+    font-size: 1.1rem;
+  }
+  
+  .suggestions {
+    max-width: 350px;
+  }
+  
+  .suggestion-item {
+    padding: 14px 18px;
+  }
+  
+  /* Messages */
+  .message-content {
+    max-width: 65%;
+  }
+  
+  .message-text {
+    padding: 14px 18px;
+    font-size: 1rem;
+  }
+  
+  .avatar-circle {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .avatar-circle svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  /* Message input */
+  .message-input-container {
+    padding: 18px 25px;
+  }
+  
+  .input-wrapper {
+    padding: 10px 15px;
+    gap: 12px;
+  }
+  
+  .message-textarea {
+    font-size: 1rem;
+  }
+  
+  .toggle-slider {
+    width: 45px;
+    height: 22px;
+  }
+  
+  .toggle-slider::before {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .rag-toggle input:checked + .toggle-slider::before {
+    transform: translateX(23px);
+  }
+  
+  .file-upload-button,
+  .voice-input-button,
+  .send-button {
+    padding: 10px;
+  }
+  
+  .file-upload-button svg,
+  .voice-input-button svg,
+  .send-button svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  /* Knowledge base */
+  .kb-header {
+    padding: 25px;
+  }
+  
+  .kb-header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .kb-tabs {
+    padding: 0 25px;
+  }
+  
+  .kb-tab {
+    padding: 18px 25px;
+    font-size: 1rem;
+  }
+  
+  /* Document upload */
+  .document-upload {
+    padding: 25px;
+  }
+  
+  .upload-icon {
+    font-size: 3.5rem;
+  }
+  
+  .upload-content h3 {
+    font-size: 1.3rem;
+  }
+  
+  /* Document list */
+  .document-list {
+    padding: 25px;
+  }
+  
+  .list-header h3 {
+    font-size: 1.3rem;
+  }
+  
+  .document-item {
+    padding: 14px;
+  }
+  
+  /* E5 vector search */
+  .e5-vector-search {
+    padding: 25px;
+  }
+  
+  .search-header h3 {
+    font-size: 1.3rem;
+  }
+  
+  .result-item {
+    padding: 14px;
+  }
+  
+  /* Model status */
+  .model-status {
+    bottom: 25px;
+    right: 25px;
+    padding: 14px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .chatbot-container {
+    margin: 2px;
+  }
+  
+  .chatbot-main {
+    margin: 2px;
+    border-radius: 10px;
+  }
+  
+  .chat-header {
+    padding: 5px 10px;
+    min-height: 40px;
+  }
+  
+  .logo-section h1 {
+    font-size: 1rem;
+  }
+  
+  .messages-container {
+    padding: 5px;
+    gap: 5px;
+  }
+  
+  .message-input-container {
+    padding: 5px 10px;
+  }
+  
+  .input-wrapper {
+    padding: 4px 8px;
+  }
+  
+  .model-status {
+    bottom: 5px;
+    right: 5px;
+    padding: 5px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .avatar-circle,
+  .status-dot,
+  .loading-spinner .spinner {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Print styles */
+@media print {
+  .chatbot-container {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  .chatbot-main {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  .chat-header {
+    background: white !important;
+    color: black !important;
+    border-bottom: 1px solid black;
+  }
+  
+  .message-input-container {
+    display: none;
+  }
+  
+  .model-status {
+    display: none;
+  }
+  
+  .knowledge-base-toggle {
+    display: none;
+  }
+}

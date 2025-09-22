@@ -1,0 +1,17 @@
+.settings {
+  padding: 20px;
+  height: 100%;
+}
+
+.settings h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.settings-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

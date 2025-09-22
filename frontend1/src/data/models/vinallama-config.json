@@ -1,0 +1,77 @@
+{
+  "model": {
+    "name": "Vinallama",
+    "version": "1.0.0",
+    "description": "Vietnamese Large Language Model for RAG applications",
+    "type": "llm",
+    "framework": "transformers",
+    "architecture": "llama-2",
+    "parameters": "7B",
+    "language": "vi"
+  },
+  "paths": {
+    "modelPath": "/models/vinallama",
+    "tokenizerPath": "/models/vinallama/tokenizer",
+    "configPath": "/models/vinallama/config.json"
+  },
+  "generation": {
+    "maxTokens": 2048,
+    "temperature": 0.7,
+    "topP": 0.9,
+    "topK": 40,
+    "repetitionPenalty": 1.1,
+    "lengthPenalty": 1.0,
+    "noRepeatNgramSize": 3,
+    "earlyStopping": true,
+    "doSample": true,
+    "padTokenId": 0,
+    "eosTokenId": 2,
+    "bosTokenId": 1
+  },
+  "prompt": {
+    "systemPrompt": "Bạn là Vian, một trợ lý về An toàn thông tin. Bạn có thể trả lời câu hỏi, giải thích khái niệm, và hỗ trợ người dùng một cách hữu ích và chính xác.",
+    "userPromptTemplate": "[INST] {context}\n\n{question} [/INST]",
+    "assistantPromptTemplate": "{response}",
+    "stopSequences": ["</s>", "[INST]", "[/INST]", "<|endoftext|>"],
+    "maxContextLength": 4096
+  },
+  "performance": {
+    "batchSize": 1,
+    "maxConcurrentRequests": 5,
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  },
+  "memory": {
+    "maxMemoryUsage": "8GB",
+    "gpuMemoryFraction": 0.8,
+    "cpuMemoryFraction": 0.6
+  },
+  "optimization": {
+    "useCache": true,
+    "cacheSize": 1000,
+    "useQuantization": false,
+    "quantizationType": "int8",
+    "useTensorRT": false,
+    "useONNX": false
+  },
+  "monitoring": {
+    "enableMetrics": true,
+    "logLevel": "INFO",
+    "enableProfiling": false,
+    "metricsInterval": 60
+  },
+  "safety": {
+    "enableContentFilter": true,
+    "maxToxicityScore": 0.8,
+    "enableBiasDetection": true,
+    "enableFactChecking": false
+  },
+  "features": {
+    "enableStreaming": true,
+    "enableFunctionCalling": false,
+    "enableCodeGeneration": true,
+    "enableMathReasoning": true,
+    "enableVietnameseProcessing": true
+  }
+}

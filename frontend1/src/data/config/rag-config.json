@@ -1,0 +1,102 @@
+{
+  "rag": {
+    "name": "Vietnamese RAG System",
+    "version": "1.0.0",
+    "description": "Retrieval-Augmented Generation system for Vietnamese documents",
+    "language": "vi"
+  },
+  "retrieval": {
+    "maxResults": 5,
+    "similarityThreshold": 0.7,
+    "rerankResults": true,
+    "rerankModel": "cross-encoder",
+    "rerankTopK": 10,
+    "enableHybridSearch": true,
+    "hybridSearchWeights": {
+      "semantic": 0.7,
+      "keyword": 0.3
+    }
+  },
+  "chunking": {
+    "chunkSize": 1000,
+    "overlapSize": 200,
+    "chunkingStrategy": "semantic",
+    "enableSentenceSplitting": true,
+    "minChunkSize": 100,
+    "maxChunkSize": 2000,
+    "preserveParagraphs": true
+  },
+  "embedding": {
+    "model": "e5-large-v2",
+    "batchSize": 32,
+    "normalize": true,
+    "enableCache": true,
+    "cacheSize": 10000,
+    "enableBatchProcessing": true
+  },
+  "generation": {
+    "model": "vinallama",
+    "maxTokens": 2048,
+    "temperature": 0.7,
+    "topP": 0.9,
+    "topK": 40,
+    "repetitionPenalty": 1.1,
+    "enableStreaming": true,
+    "contextWindow": 4096
+  },
+  "prompt": {
+    "systemPrompt": "Bạn là Vian, một trợ lý về An toàn thông tin. Sử dụng thông tin từ tài liệu được cung cấp để trả lời câu hỏi một cách chính xác và hữu ích. Nếu không tìm thấy thông tin liên quan trong tài liệu, hãy nói rõ điều đó.",
+    "userPromptTemplate": "Dựa trên thông tin sau:\n\n{context}\n\nHãy trả lời câu hỏi: {question}",
+    "assistantPromptTemplate": "{response}",
+    "maxContextLength": 3000,
+    "enableContextCompression": true
+  },
+  "preprocessing": {
+    "enableTextCleaning": true,
+    "enableVietnameseNormalization": true,
+    "enableStopWordRemoval": true,
+    "enableStemming": false,
+    "enableLemmatization": false,
+    "removeSpecialCharacters": false,
+    "preserveNumbers": true,
+    "preserveDates": true
+  },
+  "postprocessing": {
+    "enableResponseFiltering": true,
+    "enableFactChecking": false,
+    "enableSourceCitation": true,
+    "enableConfidenceScoring": true,
+    "maxResponseLength": 2000
+  },
+  "performance": {
+    "maxConcurrentRequests": 5,
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000,
+    "enableCaching": true,
+    "cacheExpiration": 3600
+  },
+  "monitoring": {
+    "enableMetrics": true,
+    "enableLogging": true,
+    "logLevel": "INFO",
+    "metricsInterval": 60,
+    "enablePerformanceTracking": true
+  },
+  "safety": {
+    "enableContentFilter": true,
+    "enableBiasDetection": true,
+    "enableToxicityDetection": true,
+    "maxToxicityScore": 0.8,
+    "enableFactChecking": false,
+    "enableSourceVerification": true
+  },
+  "features": {
+    "enableMultiDocumentSearch": true,
+    "enableCrossDocumentReferences": true,
+    "enableDocumentRanking": true,
+    "enableQueryExpansion": true,
+    "enableRelevanceFeedback": false,
+    "enablePersonalization": false
+  }
+}

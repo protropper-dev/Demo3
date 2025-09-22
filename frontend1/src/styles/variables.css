@@ -1,0 +1,284 @@
+/* CSS Variables for consistent theming */
+
+:root {
+  /* Primary Colors */
+  --color-primary: #4CAF50;
+  --color-primary-light: #81C784;
+  --color-primary-dark: #388E3C;
+  --color-primary-rgb: 76, 175, 80;
+  
+  /* Secondary Colors */
+  --color-secondary: #2196F3;
+  --color-secondary-light: #64B5F6;
+  --color-secondary-dark: #1976D2;
+  --color-secondary-rgb: 33, 150, 243;
+  
+  /* Accent Colors */
+  --color-accent: #FF9800;
+  --color-accent-light: #FFB74D;
+  --color-accent-dark: #F57C00;
+  --color-accent-rgb: 255, 152, 0;
+  
+  /* Status Colors */
+  --color-success: #4CAF50;
+  --color-success-light: #81C784;
+  --color-success-dark: #388E3C;
+  --color-success-rgb: 76, 175, 80;
+  
+  --color-warning: #FF9800;
+  --color-warning-light: #FFB74D;
+  --color-warning-dark: #F57C00;
+  --color-warning-rgb: 255, 152, 0;
+  
+  --color-error: #F44336;
+  --color-error-light: #EF5350;
+  --color-error-dark: #D32F2F;
+  --color-error-rgb: 244, 67, 54;
+  
+  --color-info: #2196F3;
+  --color-info-light: #64B5F6;
+  --color-info-dark: #1976D2;
+  --color-info-rgb: 33, 150, 243;
+  
+  /* Neutral Colors */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  --color-gray-50: #FAFAFA;
+  --color-gray-100: #F5F5F5;
+  --color-gray-200: #EEEEEE;
+  --color-gray-300: #E0E0E0;
+  --color-gray-400: #BDBDBD;
+  --color-gray-500: #9E9E9E;
+  --color-gray-600: #757575;
+  --color-gray-700: #616161;
+  --color-gray-800: #424242;
+  --color-gray-900: #212121;
+  
+  /* Background Colors */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8F9FA;
+  --bg-tertiary: #F5F5F5;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-backdrop: rgba(255, 255, 255, 0.9);
+  
+  /* Text Colors */
+  --text-primary: #212121;
+  --text-secondary: #616161;
+  --text-tertiary: #9E9E9E;
+  --text-inverse: #FFFFFF;
+  --text-muted: #757575;
+  
+  /* Border Colors */
+  --border-primary: #E0E0E0;
+  --border-secondary: #BDBDBD;
+  --border-focus: var(--color-primary);
+  --border-error: var(--color-error);
+  
+  /* Shadow Colors */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.15);
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+  --spacing-3xl: 4rem;     /* 64px */
+  
+  /* Border Radius */
+  --radius-sm: 0.25rem;    /* 4px */
+  --radius-md: 0.5rem;     /* 8px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+  --radius-2xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+  
+  /* Font Sizes */
+  --font-xs: 0.75rem;      /* 12px */
+  --font-sm: 0.875rem;     /* 14px */
+  --font-base: 1rem;       /* 16px */
+  --font-lg: 1.125rem;     /* 18px */
+  --font-xl: 1.25rem;      /* 20px */
+  --font-2xl: 1.5rem;      /* 24px */
+  --font-3xl: 1.875rem;    /* 30px */
+  --font-4xl: 2.25rem;     /* 36px */
+  --font-5xl: 3rem;        /* 48px */
+  
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+  
+  /* Z-Index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+  
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  
+  /* Container Sizes */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+  
+  /* Chatbot Specific Variables */
+  --chatbot-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --chatbot-header-height: 70px;
+  --chatbot-input-height: 80px;
+  --chatbot-border-radius: 20px;
+  --chatbot-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  
+  /* Message Variables */
+  --message-user-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --message-bot-bg: #FFFFFF;
+  --message-border-radius: 18px;
+  --message-padding: 12px 16px;
+  --message-margin: 15px;
+  
+  /* Input Variables */
+  --input-bg: #F8F9FA;
+  --input-border: 2px solid #E0E0E0;
+  --input-border-focus: 2px solid var(--color-primary);
+  --input-border-radius: 25px;
+  --input-padding: 8px 12px;
+  
+  /* Button Variables */
+  --button-primary-bg: var(--color-primary);
+  --button-primary-hover: var(--color-primary-dark);
+  --button-secondary-bg: var(--color-gray-200);
+  --button-secondary-hover: var(--color-gray-300);
+  --button-border-radius: 8px;
+  --button-padding: 8px 16px;
+  
+  /* Progress Variables */
+  --progress-bg: #E0E0E0;
+  --progress-fill: var(--color-primary);
+  --progress-height: 6px;
+  --progress-border-radius: 3px;
+  
+  /* Status Variables */
+  --status-ready: var(--color-success);
+  --status-loading: var(--color-warning);
+  --status-error: var(--color-error);
+  --status-dot-size: 8px;
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+  /* Background Colors */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3a3a3a;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+  --bg-backdrop: rgba(26, 26, 26, 0.9);
+  
+  /* Text Colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #B3B3B3;
+  --text-tertiary: #808080;
+  --text-inverse: #1a1a1a;
+  --text-muted: #999999;
+  
+  /* Border Colors */
+  --border-primary: #404040;
+  --border-secondary: #555555;
+  
+  /* Shadow Colors */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.4);
+  
+  /* Chatbot Specific Variables */
+  --chatbot-bg: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+  
+  /* Message Variables */
+  --message-bot-bg: #2d2d2d;
+  
+  /* Input Variables */
+  --input-bg: #3a3a3a;
+  --input-border: 2px solid #404040;
+  
+  /* Button Variables */
+  --button-secondary-bg: #404040;
+  --button-secondary-hover: #555555;
+  
+  /* Progress Variables */
+  --progress-bg: #404040;
+}
+
+/* High contrast theme variables */
+[data-theme="high-contrast"] {
+  --color-primary: #0000FF;
+  --color-secondary: #008000;
+  --color-accent: #FF0000;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F0F0F0;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --border-primary: #000000;
+  --border-secondary: #000000;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0s;
+    --transition-normal: 0s;
+    --transition-slow: 0s;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  :root {
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #FFFFFF;
+    --text-primary: #000000;
+    --text-secondary: #000000;
+    --border-primary: #000000;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --shadow-xl: none;
+    --shadow-2xl: none;
+  }
+}

@@ -1,0 +1,142 @@
+.source-citations {
+  margin-top: 12px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #f8f9fa;
+  overflow: hidden;
+}
+
+.citations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #e9ecef;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.citations-header:hover {
+  background: #dee2e6;
+}
+
+.citations-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.expand-icon {
+  font-size: 10px;
+  color: #6c757d;
+  transition: transform 0.2s;
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.citations-content {
+  padding: 8px 12px;
+  background: white;
+}
+
+.citation-item {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.citation-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.citation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.citation-filename {
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+  flex: 1;
+}
+
+.citation-category {
+  font-size: 10px;
+  color: #6c757d;
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.citation-content {
+  font-size: 11px;
+  color: #6c757d;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #4CAF50;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.citation-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 10px;
+  color: #6c757d;
+}
+
+.similarity-score {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.page-number,
+.chunk-number {
+  color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .citations-header {
+    padding: 6px 10px;
+  }
+  
+  .citations-title {
+    font-size: 11px;
+  }
+  
+  .citations-content {
+    padding: 6px 10px;
+  }
+  
+  .citation-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .citation-category {
+    margin-left: 0;
+  }
+  
+  .citation-content {
+    font-size: 10px;
+    max-height: 60px;
+  }
+  
+  .citation-meta {
+    flex-direction: column;
+    gap: 2px;
+  }
+}

@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ChatGPT - Demo</title>
+    <link
+      rel="stylesheet"
+      href="css\fontawesome-free-6.5.2-web\fontawesome-free-6.5.2-web\css\all.min.css"
+    />
+    <style>
+      :root {
+        --bg: #0b1221;
+        --panel: #0f1724;
+        --muted: #9aa4b2;
+        --accent: #10a37f;
+        --glass: rgba(255, 255, 255, 0.03);
+        --white: #e6eef3;
+        --radius: 12px;
+        font-family: Inter, sans-serif;
+      }
+      .light {
+        --bg: #f6f8fb;
+        --panel: #ffffff;
+        --muted: #6b7280;
+        --accent: #0b7285;
+        --glass: rgba(2, 6, 23, 0.03);
+        --white: #0b1221;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        background: var(--bg);
+        color: var(--white);
+        display: flex;
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        width: 100%;
+        height: 100%;
+        transition: grid-template-columns 0.3s ease;
+        grid-gap: 0;
+      }
+      .app.sidebar-collapsed {
+        grid-template-columns: 60px 1fr;
+      }
+
+      .sidebar-collapsed .brand,
+      .sidebar-collapsed .new-chat,
+      .sidebar-collapsed .search-btn,
+      .sidebar-collapsed .section-header {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .app.project-open {
+        grid-template-columns: 280px 250px 1fr;
+      }
+      .app.sidebar-collapsed.project-open {
+        grid-template-columns: 60px 250px 1fr;
+        padding: 0px;
+      }
+      /* Sidebar */
+      .sidebar {
+        background: var(--panel);
+        padding: 12px 12px 12px 12px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        border-radius: 8px;
+        cursor: pointer;
+        position: relative;
+      }
+      .sidebar-item .icon {
+        flex-shrink: 0;
+        width: 36px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .sidebar-item .content {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        opacity: 1;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        transform: translateX(0);
+      }
+      .sidebar-collapsed .sidebar-item .content {
+        opacity: 0;
+        transform: translateX(20px);
+        pointer-events: none;
+      }
+      .sidebar-collapsed .sidebar-item {
+        justify-content: center;
+        gap: 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .logo {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), #6ee7b7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #012;
+      }
+      .brand h1 {
+        font-size: 16px;
+        margin: 0;
+        white-space: nowrap;
+      }
+      .new-chat {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--accent);
+        color: #012;
+        border: none;
+        padding: 8px 0;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 12px;
+      }
+      .search-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--glass);
+        border: none;
+        padding: 8px 0;
+        border-radius: 8px;
+        color: var(--white);
+        margin-bottom: 12px;
+        width: 100%;
+        cursor: pointer;
+        text-align: left;
+      }
+      .conversations,
+      .files {
+        flex: 1;
+        overflow-y: auto;
+      }
+      .conv,
+      .file,
+      .proj-file,
+      .proj-chat {
+        padding: 8px;
+        border-radius: 8px;
+        display: flex;
+        gap: 8px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .conv:hover,
+      .file:hover,
+      .proj-file:hover,
+      .proj-chat:hover {
+        background: var(--glass);
+      }
+      .file .title,
+      .proj-file .title,
+      .proj-chat .title {
+        font-size: 14px;
+      }
+      .conv .title {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.3;
+        max-height: calc(1.3em * 2); /* chỉ cho 2 dòng */
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* số dòng tối đa */
+        -webkit-box-orient: vertical;
+        text-overflow: ellipsis;
+        word-break: break-word; /* để xuống dòng khi gặp từ dài */
+      }
+      .conv .title.editing {
+        display: block; /* bỏ clamp */
+        -webkit-line-clamp: unset;
+        overflow: auto;
+        text-overflow: unset;
+        white-space: pre-wrap; /* gõ xuống dòng thoải mái */
+        max-height: calc(1.3em * 4);
+      }
+
+      .conv .sub {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .conv {
+        display: flex;
+        align-items: center; /* canh giữa theo chiều dọc */
+        justify-content: space-between; /* avatar trái, info giữa, actions phải */
+        gap: 10px;
+        padding: 6px 8px;
+      }
+
+      .conv > div:nth-child(1) {
+        /* avatar */
+        flex: 0 0 32px; /* cố định 32px */
+      }
+
+      .conv > div:nth-child(2) {
+        /* info (title + sub) */
+        flex: 1; /* chiếm hết khoảng giữa */
+        min-width: 0; /* để text-overflow hoạt động */
+      }
+
+      .conv > .item-actions {
+        flex: 0 0 auto; /* giữ nguyên kích thước nút */
+        display: flex;
+        gap: 6px;
+      }
+      .item-actions {
+        display: flex;
+        gap: 4px;
+        position: relative;
+      }
+      .item-actions button {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        padding: 4px;
+      }
+      .item-actions button:hover {
+        color: var(--white);
+      }
+      .more-btn {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        padding: 4px;
+      }
+      .more-btn:hover {
+        color: var(--white);
+      }
+      .action-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: var(--panel);
+        border: 1px solid var(--glass);
+        border-radius: 4px;
+        padding: 4px;
+        z-index: 10;
+      }
+      .action-menu button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: none;
+        color: var(--white);
+        padding: 4px 8px;
+        cursor: pointer;
+      }
+      .action-menu button:hover {
+        background: var(--glass);
+      }
+      .toggleBgColorBtn.sidebar-item {
+        margin-top: auto;
+      }
+      .theme-toggle,
+      .sidebar-toggle {
+        padding: 6px;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        color: var(--white);
+        cursor: pointer;
+      }
+      .setting.sidebar-item {
+        padding: 8px;
+
+        cursor: pointer;
+        position: relative;
+      }
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #012;
+      }
+      .user-name {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .user-handle {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .setting-menu {
+        display: none;
+        position: fixed; /* quan trọng */
+        background: var(--panel);
+        border: 1px solid var(--glass);
+        border-radius: 8px;
+        padding: 8px;
+        z-index: 9999; /* luôn nổi trên cùng */
+        min-width: 160px;
+      }
+      .setting-menu button {
+        display: block;
+        background: transparent;
+        border: none;
+        color: var(--white);
+        padding: 8px;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+      }
+      .setting-menu button:hover {
+        background: var(--glass);
+      }
+      /* Hide and adjust for collapsed sidebar */
+      .sidebar-collapsed .brand h1 {
+        display: none;
+      }
+      .sidebar-collapsed .conv > div:nth-child(2),
+      .sidebar-collapsed .proj > div:nth-child(2),
+      .sidebar-collapsed .file > div:nth-child(2) {
+        display: none;
+      }
+      .sidebar-collapsed .brand {
+        justify-content: center;
+      }
+      .sidebar-collapsed .conv,
+      .sidebar-collapsed .proj,
+      .sidebar-collapsed .file {
+        justify-content: center;
+        gap: 0;
+        padding: 8px 0;
+      }
+      .sidebar-collapsed .item-actions {
+        display: none;
+      }
+      .sidebar-collapsed .toggleBgColorBtn {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .sidebar-collapsed .setting {
+        justify-content: center;
+        padding: 8px 0;
+        border-top: none;
+      }
+
+      .sidebar-collapsed .button-text,
+      .sidebar-collapsed .header-text {
+        display: none;
+      }
+      .sidebar-collapsed .new-chat,
+      .sidebar-collapsed .search-btn,
+      .sidebar-collapsed .section-header {
+        justify-content: center;
+        padding: 8px 0;
+      }
+      .sidebar-collapsed .add-btn {
+        display: none;
+      }
+      /* Section headers */
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 12px 0 6px;
+        font-size: 14px;
+        color: var(--muted);
+        cursor: pointer;
+        justify-content: space-between;
+      }
+      .section-header .add-btn {
+        background: transparent;
+        border: none;
+        color: var(--white);
+        cursor: pointer;
+        padding: 0;
+        font-size: 14px;
+      }
+
+      /* Panel */
+      .panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: var(--panel);
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .topbar h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .topbar .theme-toggle {
+        margin-left: auto;
+      }
+      .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin: 0 auto;
+        overflow-y: auto;
+        width: 100%;
+      }
+      .chat-window {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 100px;
+        height: 600px; /* Fixed height for chat frame */
+      }
+      .message {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 14px;
+        max-width: 100%;
+      }
+
+      /* Avatar */
+      .message .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: var(--glass);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+
+      /* Bubble content */
+      .message .content {
+        max-width: 80%;
+        padding: 10px;
+        border-radius: 8px;
+        background: var(--glass);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Text */
+      .message .text {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        position: relative;
+      }
+
+      /* Collapse chỉ áp dụng cho user */
+      .message.user .text {
+        max-height: 120px;
+        overflow: hidden;
+      }
+
+      .message.user.expanded .text {
+        max-height: none;
+      }
+
+      /* Actions */
+      .message .actions {
+        margin-top: 6px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .message .actions button {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* Canh lề hai bên */
+      .message.user {
+        flex-direction: row-reverse; /* avatar bên phải */
+        text-align: right;
+      }
+
+      .message.ai {
+        flex-direction: row; /* avatar bên trái */
+        text-align: left;
+      }
+
+      /* Khi đang edit */
+      .message.editing .content {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: stretch;
+        background: rgba(16, 163, 127, 0.2);
+        box-shadow: 0 0 6px rgba(16, 163, 127, 0.4);
+        transition: background 0.2s, box-shadow 0.2s;
+      }
+
+      /* Textarea luôn full bubble */
+      .edit-textarea {
+        width: 100%;
+        border: none;
+        outline: none;
+        resize: none;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 15px;
+        line-height: 1.5;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--white);
+        min-height: 60px;
+        max-height: 400px;
+        overflow-y: auto; /* cuộn khi quá dài */
+        margin-bottom: 8px;
+      }
+
+      /* Hàng nút căn đều */
+      .message.editing .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      /* Input area */
+      main.panel {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+      .input-area {
+        position: sticky;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        padding: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        gap: 6px;
+      }
+      .input-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        max-width: 800px;
+        background: var(--glass);
+        border-radius: 24px;
+        padding: 6px 10px;
+        gap: 8px;
+      }
+      .input-wrapper textarea {
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: var(--white);
+        resize: none;
+        outline: none;
+        padding: 6px;
+      }
+      .input-wrapper button {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .send-btn {
+        background: var(--accent);
+        color: #012;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      #inputMsg {
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: var(--white);
+        resize: none; /* tắt nút kéo */
+        outline: none;
+        padding: 6px 10px;
+
+        font-size: 16px;
+        line-height: 1.5;
+
+        overflow-y: auto; /* cho phép cuộn khi vượt quá max-height */
+        max-height: 200px;
+      }
+
+      /* Popup for search */
+      .popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+      }
+      .popup-content {
+        background: var(--panel);
+        padding: 20px;
+        border-radius: 12px;
+        width: 300px;
+      }
+      .popup-input {
+        width: 100%;
+        padding: 8px;
+        border: none;
+        background: var(--glass);
+        color: var(--white);
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      .popup-close {
+        background: var(--accent);
+        color: #012;
+        border: none;
+        padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+      }
+      /* Instructions Modal */
+      .instructions-modal {
+        padding: 20px;
+      }
+      .instructions-modal textarea {
+        width: 100%;
+        height: 200px;
+        padding: 8px;
+        border: none;
+        background: var(--glass);
+        color: var(--white);
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      .instructions-save {
+        background: var(--accent);
+        color: #012;
+        border: none;
+        padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+      }
+      /* View More Button */
+      .view-more {
+        background: var(--glass);
+        color: var(--white);
+        border: none;
+        padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        margin-top: 8px;
+      }
+      .view-more:hover {
+        background: var(--accent);
+        color: #012;
+      }
+      /* Modals */
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0; /* thay top/left/right/bottom */
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
+
+      .modal-content {
+        background: var(--panel);
+        padding: 20px;
+        border-radius: 12px;
+        width: 80%;
+        max-width: 1200px;
+        height: 80%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* tránh con tràn ra ngoài */
+      }
+
+      .modal-header {
+        display: flex;
+        flex: 0 0 auto;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .modal-search {
+        width: 100%;
+        padding: 8px;
+        border: none;
+        background: var(--glass);
+        color: var(--white);
+        border-radius: 8px;
+        margin-bottom: 12px;
+      }
+
+      /* body chiếm hết phần còn lại */
+      .modal-body {
+        flex: 1 1 auto;
+        display: flex;
+        gap: 16px;
+        padding: 0 12px 12px;
+        min-height: 0; /* cần cho scroll */
+      }
+
+      .modal-body.no-preview {
+        display: block;
+      }
+
+      .modal-list {
+        flex: 1 1 40%;
+        overflow-y: auto;
+        border-right: 1px solid #eee;
+        padding-right: 8px;
+        min-height: 0;
+      }
+
+      .modal-preview {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .modal-chat-window {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        background: var(--glass);
+        border-radius: 8px;
+        min-height: 0;
+      }
+
+      .modal-footer {
+        flex: 0 0 auto;
+        text-align: right;
+        padding-top: 12px;
+        border-top: 1px solid var(--glass);
+      }
+
+      .modal-close {
+        background: transparent;
+        border: none;
+        color: var(--white);
+        cursor: pointer;
+        font-size: 18px;
+      }
+
+      .continue-btn {
+        background: var(--accent);
+        color: #012;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .continue-btn:disabled {
+        background: var(--glass);
+        color: var(--muted);
+        cursor: not-allowed;
+      }
+
+      @media (max-width: 768px) {
+        .app {
+          grid-template-columns: 0 1fr;
+        }
+        .app.sidebar-collapsed {
+          grid-template-columns: 200px 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand sidebar-item">
+          <div class="icon logo">AI</div>
+          <div class="content"><h1>ChatGPT</h1></div>
+        </div>
+        <button class="new-chat sidebar-item" id="newChat">
+          <div class="icon"><i class="fas fa-plus"></i></div>
+          <div class="content"><span class="button-text">Tin mới</span></div>
+        </button>
+        <button class="search-btn sidebar-item" id="searchBtn">
+          <div class="icon"><i class="fas fa-search"></i></div>
+          <div class="content">
+            <span class="button-text">Tìm kiếm cuộc trò chuyện...</span>
+          </div>
+        </button>
+        <h3 class="section-header sidebar-item" id="conversationsHeader">
+          <div class="icon"><i class="fas fa-comments"></i></div>
+          <div class="content">
+            <span class="header-text">Lịch sử trò chuyện</span>
+          </div>
+        </h3>
+        <div class="conversations" id="conversations"></div>
+        <div class="projects" id="projects"></div>
+        <h3 class="section-header sidebar-item" id="filesHeader">
+          <div class="icon"><i class="fas fa-folder"></i></div>
+          <div class="content"><span class="header-text">Tập tin</span></div>
+        </h3>
+        <div class="files" id="files"></div>
+        <div class="toggleBgColorBtn sidebar-item">
+          <div class="icon">
+            <button class="sidebar-toggle" id="toggleSidebar">
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
+        </div>
+        <div class="setting sidebar-item" id="setting">
+          <div class="icon user-avatar">U</div>
+          <div class="setting-menu" id="settingMenu">
+            <button id="settingsBtn">Cài đặt</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="panel">
+        <div class="topbar">
+          <h2 id="chatTitle">Cuộc trò chuyện mới</h2>
+          <button class="theme-toggle" id="toggleTheme">
+            <i class="fas fa-sun"></i>
+          </button>
+        </div>
+        <div class="chat-container">
+          <div class="chat-window" id="chatWindow">
+            <div style="color: var(--muted)">Bắt đầu chat...</div>
+          </div>
+        </div>
+        <div class="input-area">
+          <div class="input-wrapper">
+            <button title="Đính kèm file">
+              <i class="fas fa-paperclip"></i>
+            </button>
+            <button title="Ghi âm"><i class="fas fa-microphone"></i></button>
+            <textarea id="inputMsg" placeholder="Nhập tin nhắn..."></textarea>
+            <button class="send-btn" id="sendBtn">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+    <!-- Popup for search -->
+    <div class="popup" id="searchPopup">
+      <div class="popup-content">
+        <input
+          id="popupSearchInput"
+          class="popup-input"
+          placeholder="Tìm kiếm cuộc trò chuyện..."
+        />
+        <button class="popup-close" id="closePopup">Đóng</button>
+      </div>
+    </div>
+    <!-- Popup for instructions -->
+    <div class="popup" id="instructionsPopup">
+      <div
+        class="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] dark:border dark:border-border-l1 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] focus:outline-none focus:outline-0 focus-within:outline-0 gap-2 bg-background rounded-3xl w-full md:w-5/6 lg:w-3/5 max-w-[1200px] flex flex-col md:overflow-hidden px-6 py-6 instructions-modal"
+      >
+        <h2 style="font-size: 18px; margin-bottom: 12px">
+          Hướng dẫn cho chatbot
+        </h2>
+        <textarea
+          id="instructionsInput"
+          placeholder="Nhập thông tin yêu cầu..."
+        ></textarea>
+        <button class="instructions-save" id="saveInstructions">Lưu</button>
+      </div>
+    </div>
+    <!-- Conversations Modal -->
+    <div class="modal" id="convModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Lịch sử trò chuyện</h2>
+          <button class="modal-close" id="closeConvModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <input
+          id="convSearchInput"
+          class="modal-search"
+          placeholder="Tìm kiếm trò chuyện..."
+        />
+        <div class="modal-body">
+          <div class="modal-list" id="modalConvList"></div>
+          <div class="modal-preview">
+            <div
+              id="modalChatTitle"
+              style="font-size: 18px; margin-bottom: 12px"
+            >
+              Xem trước
+            </div>
+            <div class="modal-chat-window" id="modalChatWindow">
+              <div style="color: var(--muted)">
+                Chọn trò chuyện để xem trước
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="convContinueBtn" class="continue-btn" disabled>
+            Tiếp tục
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Files Modal -->
+    <div class="modal" id="filesModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Tập tin</h2>
+          <button class="modal-close" id="closeFilesModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <input
+          id="filesSearchInput"
+          class="modal-search"
+          placeholder="Tìm kiếm tập tin..."
+        />
+        <div class="modal-body no-preview">
+          <div class="modal-list" id="modalFilesList"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Project Files Modal -->
+    <div class="modal" id="projFilesModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Tệp đính kèm</h2>
+          <button class="modal-close" id="closeProjFilesModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <input
+          id="projFilesSearchInput"
+          class="modal-search"
+          placeholder="Tìm kiếm tệp..."
+        />
+        <div class="modal-body no-preview">
+          <div class="modal-list" id="modalProjFilesList"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Project Chats Modal -->
+    <div class="modal" id="projChatsModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Cuộc trò chuyện</h2>
+          <button class="modal-close" id="closeProjChatsModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <input
+          id="projChatsSearchInput"
+          class="modal-search"
+          placeholder="Tìm kiếm cuộc trò chuyện..."
+        />
+        <div class="modal-body">
+          <div class="modal-list" id="modalProjChatsList"></div>
+          <div class="modal-preview">
+            <div
+              id="modalProjChatTitle"
+              style="font-size: 18px; margin-bottom: 12px"
+            >
+              Xem trước
+            </div>
+            <div class="modal-chat-window" id="modalProjChatWindow">
+              <div style="color: var(--muted)">
+                Chọn trò chuyện để xem trước
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="projChatContinueBtn" class="continue-btn" disabled>
+            Tiếp tục
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      const app = document.getElementById("app");
+      const sidebar = document.getElementById("sidebar");
+      const toggleSidebar = document.getElementById("toggleSidebar");
+      const toggleTheme = document.getElementById("toggleTheme");
+      const convList = document.getElementById("conversations");
+      const filesList = document.getElementById("files");
+      const chatWindow = document.getElementById("chatWindow");
+      const chatTitle = document.getElementById("chatTitle");
+      const newChatBtn = document.getElementById("newChat");
+      const sendBtn = document.getElementById("sendBtn");
+      const inputMsg = document.getElementById("inputMsg");
+      const searchBtn = document.getElementById("searchBtn");
+      const searchPopup = document.getElementById("searchPopup");
+      const popupSearchInput = document.getElementById("popupSearchInput");
+      const closePopup = document.getElementById("closePopup");
+      const conversationsHeader = document.getElementById(
+        "conversationsHeader"
+      );
+      const projectsHeader = document.getElementById("projectsHeader");
+      const filesHeader = document.getElementById("filesHeader");
+      const newProjectBtn = document.getElementById("newProject");
+
+      const addFileBtn = document.getElementById("addFileBtn");
+      const addChatBtn = document.getElementById("addChatBtn");
+      const instructionsPopup = document.getElementById("instructionsPopup");
+      const instructionsInput = document.getElementById("instructionsInput");
+      const saveInstructions = document.getElementById("saveInstructions");
+      const setting = document.getElementById("setting");
+      const settingMenu = document.getElementById("settingMenu");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const settingsBtn = document.getElementById("settingsBtn");
+      // Modals
+      const convModal = document.getElementById("convModal");
+      const closeConvModal = document.getElementById("closeConvModal");
+      const convSearchInput = document.getElementById("convSearchInput");
+      const modalConvList = document.getElementById("modalConvList");
+      const modalChatWindow = document.getElementById("modalChatWindow");
+      const modalChatTitle = document.getElementById("modalChatTitle");
+      const convContinueBtn = document.getElementById("convContinueBtn");
+      const filesModal = document.getElementById("filesModal");
+      const closeFilesModal = document.getElementById("closeFilesModal");
+      const filesSearchInput = document.getElementById("filesSearchInput");
+      const modalFilesList = document.getElementById("modalFilesList");
+      const projFilesModal = document.getElementById("projFilesModal");
+      const closeProjFilesModal = document.getElementById(
+        "closeProjFilesModal"
+      );
+      const projFilesSearchInput = document.getElementById(
+        "projFilesSearchInput"
+      );
+      const modalProjFilesList = document.getElementById("modalProjFilesList");
+      const projChatsModal = document.getElementById("projChatsModal");
+      const closeProjChatsModal = document.getElementById(
+        "closeProjChatsModal"
+      );
+      const projChatsSearchInput = document.getElementById(
+        "projChatsSearchInput"
+      );
+      const modalProjChatsList = document.getElementById("modalProjChatsList");
+      const modalProjChatWindow = document.getElementById(
+        "modalProjChatWindow"
+      );
+      const modalProjChatTitle = document.getElementById("modalProjChatTitle");
+      const projChatContinueBtn = document.getElementById(
+        "projChatContinueBtn"
+      );
+      const textarea = document.getElementById("inputMsg");
+      inputMsg.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault(); // ngăn xuống dòng mặc định
+          sendBtn.click(); // gọi hành động gửi
+        }
+      });
+      let conversations = [];
+      let projects = [];
+      let files = [
+        { id: "f1", name: "vian.py", icon: "fa-file-code" },
+        { id: "f2", name: "RAG.py", icon: "fa-file-code" },
+        { id: "f3", name: "ChatbotWorkflow.png", icon: "fa-file-image" },
+        { id: "f4", name: "doc1.pdf", icon: "fa-file-pdf" },
+        { id: "f5", name: "doc2.pdf", icon: "fa-file-pdf" },
+        { id: "f6", name: "doc3.pdf", icon: "fa-file-pdf" },
+      ];
+      let activeId = null;
+      let currentProject = null;
+      let tempMessages = []; // For temporary chat before saving
+      let modalActiveConvId = null;
+      let modalActiveProjChatId = null;
+
+      toggleSidebar.addEventListener("click", () => {
+        app.classList.toggle("sidebar-collapsed");
+
+        // Giới hạn chiều rộng khi mở
+        if (!app.classList.contains("sidebar-collapsed")) {
+          sidebar.style.maxWidth = "280px"; // Giới hạn chiều rộng
+          sidebar.style.minWidth = "200px"; // (tuỳ chọn) Giới hạn chiều rộng tối thiểu
+        } else {
+          sidebar.style.maxWidth = ""; // Xoá giới hạn khi collapsed
+          sidebar.style.minWidth = "";
+        }
+
+        // Đóng tất cả submenu khi collapsed
+        if (app.classList.contains("sidebar-collapsed")) {
+          convList.style.display = "none";
+
+          filesList.style.display = "none";
+        }
+      });
+
+      toggleTheme.addEventListener("click", () => {
+        document.documentElement.classList.toggle("light");
+      });
+      searchBtn.addEventListener("click", () => {
+        if (app.classList.contains("sidebar-collapsed")) {
+          app.classList.remove("sidebar-collapsed");
+        } else {
+          convSearchInput.value = "";
+          renderModalConversations("");
+          convContinueBtn.disabled = true;
+          convModal.style.display = "flex";
+        }
+      });
+      closePopup.addEventListener("click", () => {
+        popupSearchInput.value = "";
+        renderConversations();
+        searchPopup.style.display = "none";
+      });
+      popupSearchInput.addEventListener("input", renderConversations);
+
+      // Section toggle
+      function toggleSection(section) {
+        if (app.classList.contains("sidebar-collapsed")) {
+          app.classList.remove("sidebar-collapsed");
+        } else {
+          section.style.display =
+            section.style.display === "none" ? "block" : "none";
+        }
+      }
+      conversationsHeader.addEventListener("click", () =>
+        toggleSection(convList)
+      );
+      filesHeader.addEventListener("click", () => toggleSection(filesList));
+
+      function getRelativeTime(time) {
+        const diff = Date.now() - time;
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        if (seconds < 60) return "vài giây trước";
+        if (minutes < 60) return minutes + " phút trước";
+        if (hours < 24) return hours + " giờ trước";
+        return days + " ngày trước";
+      }
+
+      function getGroupName(time) {
+        const now = Date.now();
+        const diff = now - time;
+        const day = 24 * 60 * 60 * 1000;
+        if (diff < day) return "Hôm nay";
+        if (diff < 2 * day) return "Hôm qua";
+        if (diff < 7 * day) return "7 ngày gần nhất";
+        if (diff < 30 * day) return "30 ngày gần nhất";
+        return "Cũ hơn";
+      }
+
+      function createConversation(name, messages = []) {
+        const id = "c_" + Date.now();
+        const newConv = {
+          id,
+          name,
+          messages,
+          createdAt: Date.now(),
+          projectId: currentProject ? currentProject.id : null,
+        };
+        conversations.unshift(newConv);
+        if (currentProject) {
+          currentProject.chats.unshift(id);
+          renderProjectChats();
+        }
+        renderConversations();
+        setActiveConversation(id);
+      }
+
+      function renameConversation(id, newName) {
+        const conv = conversations.find((c) => c.id === id);
+        if (conv) {
+          conv.name = newName;
+          renderConversations();
+          if (activeId === id) {
+            chatTitle.textContent = newName;
+          }
+        }
+      }
+      function deleteConversation(id) {
+        conversations = conversations.filter((c) => c.id !== id);
+        if (activeId === id) {
+          activeId = null;
+          resetToHome();
+        }
+        renderConversations();
+      }
+
+      function renderConversations() {
+        convList.innerHTML = "";
+        const filtered = conversations.sort(
+          (a, b) => b.createdAt - a.createdAt
+        );
+        const displayList = filtered.slice(0, 5);
+        const groups = {};
+        displayList.forEach((c) => {
+          const group = getGroupName(c.createdAt);
+          if (!groups[group]) groups[group] = [];
+          groups[group].push(c);
+        });
+        const groupOrder = [
+          "Hôm nay",
+          "Hôm qua",
+          "7 ngày gần nhất",
+          "30 ngày gần nhất",
+          "Cũ hơn",
+        ];
+        groupOrder.forEach((g) => {
+          if (groups[g]) {
+            const header = document.createElement("div");
+            header.style =
+              "color: var(--muted); font-size: 12px; margin: 12px 0 6px;";
+            header.textContent = g;
+            convList.appendChild(header);
+            groups[g].forEach((c) => {
+              const el = createConvElement(c);
+              convList.appendChild(el);
+            });
+          }
+        });
+        if (filtered.length > 5) {
+          const viewMoreBtn = createViewMoreBtn(() => {
+            convSearchInput.value = "";
+            renderModalConversations("");
+            convContinueBtn.disabled = true;
+            convModal.style.display = "flex";
+          });
+          convList.appendChild(viewMoreBtn);
+        }
+      }
+      function createConvElement(c, isModal = false) {
+        const el = document.createElement("div");
+        el.className = "conv";
+        el.innerHTML = `
+    <div style="width:32px;height:32px;border-radius:6px;background:var(--glass);display:flex;align-items:center;justify-content:center">
+      ${c.name && c.name[0] ? c.name[0].toUpperCase() : "C"}
+    </div>
+    <div>
+      <div class="title" data-id="${c.id}">${c.name}</div>
+      <div class="sub">${getRelativeTime(c.createdAt)}</div>
+    </div>
+    <div class="item-actions">
+      <button class="btn-edit"><i class="fas fa-pencil-alt"></i></button>
+      <button class="btn-delete"><i class="fas fa-trash"></i></button>
+    </div>
+  `;
+
+        // click vào phần tử conv (trừ khi bấm edit/delete)
+        el.addEventListener("click", (e) => {
+          if (!e.target.closest(".item-actions")) {
+            setActiveConversation(c.id);
+
+            if (isModal) {
+              modalActiveConvId = c.id;
+              renderModalPreview(c);
+              convContinueBtn.disabled = false;
+            }
+          }
+        });
+
+        return el;
+      }
+      // Sidebar convList
+      convList.addEventListener("click", (e) => {
+        const convEl = e.target.closest(".conv");
+        if (!convEl) return;
+
+        const id = convEl.querySelector(".title").dataset.id;
+
+        if (e.target.closest(".btn-edit")) {
+          editTitle(id, convList);
+        }
+
+        if (e.target.closest(".btn-delete")) {
+          deleteConv(id);
+          renderConversations();
+        }
+      });
+
+      // Modal convList
+      modalConvList.addEventListener("click", (e) => {
+        const convEl = e.target.closest(".conv");
+        if (!convEl) return;
+
+        const id = convEl.querySelector(".title").dataset.id;
+
+        if (e.target.closest(".btn-edit")) {
+          editTitle(id, modalConvList);
+        }
+
+        if (e.target.closest(".btn-delete")) {
+          deleteConv(id);
+          renderModalConversations(convSearchInput.value);
+        }
+      });
+
+      window.editTitle = (id, scopeEl) => {
+        const titleEl = scopeEl.querySelector(`.title[data-id="${id}"]`);
+        if (!titleEl) return;
+
+        // Tắt ellipsis để người dùng thấy toàn bộ khi gõ
+        titleEl.classList.add("editing");
+        titleEl.contentEditable = true;
+        titleEl.focus();
+
+        titleEl.addEventListener(
+          "blur",
+          () => {
+            const newName = titleEl.textContent.trim();
+            renameConversation(id, newName);
+
+            // reset về lại ellipsis
+            titleEl.contentEditable = false;
+            titleEl.classList.remove("editing");
+          },
+          { once: true }
+        );
+      };
+
+      window.deleteConv = (id) => {
+        if (confirm("Xóa cuộc trò chuyện?")) {
+          deleteConversation(id);
+        }
+      };
+
+      function renderFiles() {
+        filesList.innerHTML = "";
+        const displayList = files.slice(0, 5);
+        displayList.forEach((f) => {
+          const el = createFileElement(f);
+          filesList.appendChild(el);
+        });
+        if (files.length > 5) {
+          const viewMoreBtn = createViewMoreBtn(() => {
+            filesSearchInput.value = "";
+            renderModalFiles("");
+            filesModal.style.display = "flex";
+          });
+          filesList.appendChild(viewMoreBtn);
+        }
+      }
+      function escapeHTML(str) {
+        return str
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function createFileElement(f) {
+        const el = document.createElement("div");
+        el.className = "file";
+        el.innerHTML = `<i class="fas ${f.icon}"></i>
+        <div>
+          <div class="title">${f.name}</div>
+        </div>`;
+        return el;
+      }
+      function setActiveConversation(id) {
+        activeId = id;
+        const conv = conversations.find((x) => x.id === id);
+        chatTitle.textContent = conv.name;
+        renderMessages(conv);
+      }
+      function renderMessages(conv) {
+        chatWindow.innerHTML = "";
+        if (conv.messages.length === 0) {
+          chatWindow.innerHTML =
+            '<div style="color:var(--muted)">Không có tin nhắn</div>';
+          return;
+        }
+
+        conv.messages.forEach((m, index) => {
+          const isUser = m.role === "user";
+          const mEl = document.createElement("div");
+          mEl.className = "message " + (isUser ? "user" : "");
+          mEl.innerHTML = `
+      <div class="avatar">${isUser ? "You" : "AI"}</div>
+      <div class="content" id="msg-${index}">
+        <div class="text">${escapeHTML(m.text)}</div>
+        <div class="actions">
+          <button onclick="copyMessage(${index})"><i class="fas fa-copy"></i> Copy</button>
+          ${
+            isUser
+              ? `<button onclick="startEditMessage(${index})"><i class="fas fa-edit"></i> Edit</button>
+                 ${
+                   m.text.length > 200
+                     ? `<button onclick="toggleExpand(${index})" id="expand-${index}"><i class="fas fa-expand"></i> Expand</button>`
+                     : ""
+                 }`
+              : `<button onclick="likeMessage(${index})"><i class="fas fa-thumbs-up"></i></button>
+                 <button onclick="dislikeMessage(${index})"><i class="fas fa-thumbs-down"></i></button>
+                 <button onclick="shareMessage(${index})"><i class="fas fa-share"></i></button>`
+          }
+        </div>
+      </div>`;
+          chatWindow.appendChild(mEl);
+        });
+
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
+      function startEditMessage(index) {
+        const conv = conversations.find((c) => c.id === activeId);
+        const msgEl = document.getElementById("msg-" + index);
+        const messageWrapper = msgEl.closest(".message"); // lấy div .message cha
+        messageWrapper.classList.add("editing");
+
+        const oldText = conv.messages[index].text;
+
+        msgEl.innerHTML = `
+  <textarea class="edit-textarea" id="edit-${index}">${escapeHTML(
+          oldText
+        )}</textarea>
+  <div class="actions">
+    <button onclick="saveEditMessage(${index})"><i class="fas fa-check"></i> Save</button>
+    <button onclick="cancelEditMessage(${index}, \`${escapeHTML(
+          oldText
+        )}\`)"><i class="fas fa-times"></i> Cancel</button>
+  </div>
+`;
+
+        const textarea = document.getElementById("edit-" + index);
+        textarea.focus();
+
+        // Auto resize khi gõ
+        function autoResize() {
+          textarea.style.height = "auto";
+          textarea.style.height = textarea.scrollHeight + "px";
+        }
+        textarea.addEventListener("input", autoResize);
+        autoResize();
+
+        // Bắt sự kiện phím
+        textarea.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") {
+            cancelEditMessage(index, oldText);
+          }
+          if (e.key === "Enter" && e.ctrlKey) {
+            e.preventDefault();
+            saveEditMessage(index);
+          }
+        });
+      }
+
+      function saveEditMessage(index) {
+        const conv = conversations.find((c) => c.id === activeId);
+        const textarea = document.getElementById("edit-" + index);
+        conv.messages[index].text = textarea.value;
+
+        renderMessages(conv);
+      }
+
+      function cancelEditMessage(index, oldText) {
+        const conv = conversations.find((c) => c.id === activeId);
+        conv.messages[index].text = oldText;
+
+        renderMessages(conv);
+      }
+
+      function toggleExpand(index) {
+        const msgEl = document.getElementById("msg-" + index);
+        const messageWrapper = msgEl.closest(".message");
+        messageWrapper.classList.toggle("expanded");
+
+        const btn = document.getElementById("expand-" + index);
+        if (messageWrapper.classList.contains("expanded")) {
+          btn.innerHTML = `<i class="fas fa-compress"></i> Collapse`;
+        } else {
+          btn.innerHTML = `<i class="fas fa-expand"></i> Expand`;
+        }
+      }
+
+      function copyMessage(index) {
+        const conv = conversations.find((c) => c.id === activeId);
+        const text = conv.messages[index].text;
+        navigator.clipboard.writeText(text);
+        alert("Đã copy!");
+      }
+
+      function editMessage(index) {
+        const conv = conversations.find((c) => c.id === activeId);
+        const oldText = conv.messages[index].text;
+        const newText = prompt("Sửa tin nhắn:", oldText);
+        if (newText !== null && newText.trim() !== "") {
+          conv.messages[index].text = newText;
+          renderMessages(conv);
+        }
+      }
+
+      function likeMessage(index) {
+        console.log("Liked message", index);
+      }
+
+      function dislikeMessage(index) {
+        console.log("Disliked message", index);
+      }
+
+      function shareMessage(index) {
+        const conv = conversations.find((c) => c.id === activeId);
+        const text = conv.messages[index].text;
+        navigator.share
+          ? navigator.share({ text })
+          : alert("Tin nhắn: " + text);
+      }
+
+      function addMessage(role, text, createIfTemp = false) {
+        if (activeId) {
+          const conv = conversations.find((c) => c.id === activeId);
+          conv.messages.push({ role, text });
+          renderConversations();
+          renderMessages(conv);
+        } else {
+          tempMessages.push({ role, text });
+          renderTempMessages();
+          if (
+            createIfTemp &&
+            tempMessages.length >= 2 &&
+            tempMessages.some((m) => m.role === "user") &&
+            tempMessages.some((m) => m.role === "assistant")
+          ) {
+            createConversation(
+              "Cuộc trò chuyện " + (conversations.length + 1),
+              tempMessages
+            );
+            tempMessages = [];
+          }
+        }
+      }
+      function renderTempMessages() {
+        chatWindow.innerHTML = "";
+        tempMessages.forEach((m) => {
+          const mEl = document.createElement("div");
+          mEl.className = "message " + (m.role === "user" ? "user" : "");
+          mEl.innerHTML = `<div class="avatar">${
+            m.role === "user" ? "You" : "AI"
+          }</div>
+        <div class="content">${m.text}</div>`;
+          chatWindow.appendChild(mEl);
+        });
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
+      function resetToHome() {
+        activeId = null;
+        tempMessages = [];
+        chatTitle.textContent = "Cuộc trò chuyện mới";
+        chatWindow.innerHTML =
+          '<div style="color: var(--muted)">Bắt đầu chat...</div>';
+      }
+      sendBtn.addEventListener("click", () => {
+        const t = inputMsg.value.trim();
+        if (!t) return;
+        addMessage("user", t);
+        inputMsg.value = "";
+        setTimeout(() => {
+          addMessage("assistant", "Phản hồi mô phỏng cho: " + t, true);
+        }, 500);
+      });
+      inputMsg.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendBtn.click();
+        }
+      });
+      newChatBtn.addEventListener("click", () => {
+        if (app.classList.contains("sidebar-collapsed")) {
+          app.classList.remove("sidebar-collapsed");
+        } else {
+          resetToHome();
+        }
+      });
+
+      // setting menu
+      function toggleSettingMenu() {
+        if (settingMenu.style.display === "block") {
+          settingMenu.style.display = "none";
+          return;
+        }
+
+        // Lấy vị trí avatar
+        const rect = setting.getBoundingClientRect();
+
+        // Append menu ra body
+        document.body.appendChild(settingMenu);
+
+        // Đặt vị trí (dịch sang phải + nhích lên trên)
+        const offsetX = 35; // dịch sang phải 10px
+        const offsetY = 35; // nhích lên trên 10px
+
+        settingMenu.style.position = "fixed";
+        settingMenu.style.left = rect.left + offsetX + "px";
+        settingMenu.style.top =
+          rect.top - settingMenu.offsetHeight - offsetY + "px";
+
+        settingMenu.style.display = "block";
+      }
+      // Modal functions
+      function createViewMoreBtn(onClick) {
+        const btn = document.createElement("button");
+        btn.className = "view-more";
+        btn.textContent = "Xem thêm";
+        btn.onclick = onClick;
+        return btn;
+      }
+      // Toggle khi click avatar
+      setting.addEventListener("click", (e) => {
+        e.stopPropagation(); // ngăn click lan ra document
+        toggleSettingMenu();
+      });
+
+      // Click vào "Cài đặt"
+      settingsBtn.addEventListener("click", () => {
+        alert("Cài đặt");
+      });
+
+      // Ẩn khi click ra ngoài
+      document.addEventListener("click", (e) => {
+        if (!settingMenu.contains(e.target) && !setting.contains(e.target)) {
+          settingMenu.style.display = "none";
+        }
+
+        // Đóng action menu khác
+        document.querySelectorAll(".action-menu").forEach((menu) => {
+          if (!e.target.closest(".item-actions")) {
+            menu.style.display = "none";
+          }
+        });
+      });
+
+      closeConvModal.addEventListener("click", () => {
+        convModal.style.display = "none";
+        modalActiveConvId = null;
+        modalChatWindow.innerHTML =
+          '<div style="color: var(--muted)">Chọn trò chuyện để xem trước</div>';
+      });
+
+      convSearchInput.addEventListener("input", () =>
+        renderModalConversations(convSearchInput.value)
+      );
+
+      function renderModalConversations(query) {
+        modalConvList.innerHTML = "";
+        const filtered = conversations
+          .filter((c) => c.name.toLowerCase().includes(query.toLowerCase()))
+          .sort((a, b) => b.createdAt - a.createdAt);
+        const groups = {};
+        filtered.forEach((c) => {
+          const group = getGroupName(c.createdAt);
+          if (!groups[group]) groups[group] = [];
+          groups[group].push(c);
+        });
+        const groupOrder = [
+          "Hôm nay",
+          "Hôm qua",
+          "7 ngày gần nhất",
+          "30 ngày gần nhất",
+          "Cũ hơn",
+        ];
+        groupOrder.forEach((g) => {
+          if (groups[g]) {
+            const header = document.createElement("div");
+            header.style =
+              "color: var(--muted); font-size: 12px; margin: 12px 0 6px;";
+            header.textContent = g;
+            modalConvList.appendChild(header);
+            groups[g].forEach((c) => {
+              const el = createConvElement(c, true);
+              el.onclick = (e) => {
+                if (!e.target.closest(".item-actions")) {
+                  modalActiveConvId = c.id;
+                  renderModalPreview(c);
+                  convContinueBtn.disabled = false;
+                }
+              };
+              modalConvList.appendChild(el);
+            });
+          }
+        });
+      }
+
+      function renderModalPreview(conv) {
+        modalChatTitle.textContent = conv.name;
+        modalChatWindow.innerHTML = "";
+        if (conv.messages.length === 0) {
+          modalChatWindow.innerHTML =
+            '<div style="color:var(--muted)">Không có tin nhắn</div>';
+          return;
+        }
+        conv.messages.forEach((m) => {
+          const mEl = document.createElement("div");
+          mEl.className = "message " + (m.role === "user" ? "user" : "");
+          mEl.innerHTML = `<div class="avatar">${
+            m.role === "user" ? "You" : "AI"
+          }</div>
+          <div class="content">${m.text}</div>`;
+          modalChatWindow.appendChild(mEl);
+        });
+        modalChatWindow.scrollTop = modalChatWindow.scrollHeight;
+      }
+
+      convContinueBtn.addEventListener("click", () => {
+        if (modalActiveConvId) {
+          setActiveConversation(modalActiveConvId);
+          convModal.style.display = "none";
+          modalActiveConvId = null;
+          convContinueBtn.disabled = true;
+        }
+      });
+
+      closeFilesModal.addEventListener("click", () => {
+        filesModal.style.display = "none";
+      });
+
+      filesSearchInput.addEventListener("input", () =>
+        renderModalFiles(filesSearchInput.value)
+      );
+
+      function renderModalFiles(query) {
+        modalFilesList.innerHTML = "";
+        const filtered = files.filter((f) =>
+          f.name.toLowerCase().includes(query.toLowerCase())
+        );
+        filtered.forEach((f) => {
+          const el = createFileElement(f);
+          modalFilesList.appendChild(el);
+        });
+      }
+
+      closeProjFilesModal.addEventListener("click", () => {
+        projFilesModal.style.display = "none";
+      });
+
+      projFilesSearchInput.addEventListener("input", () =>
+        renderModalProjFiles(projFilesSearchInput.value)
+      );
+
+      function renderModalProjFiles(query) {
+        modalProjFilesList.innerHTML = "";
+        const sortedFiles = currentProject.files.sort(
+          (a, b) => b.createdAt - a.createdAt
+        );
+        const filtered = sortedFiles.filter((f) =>
+          f.name.toLowerCase().includes(query.toLowerCase())
+        );
+        filtered.forEach((f) => {
+          const el = createProjFileElement(f);
+          modalProjFilesList.appendChild(el);
+        });
+      }
+
+      // init
+      for (let i = 1; i <= 10; i++) {
+        createConversation("Cuộc trò chuyện mẫu " + i, [
+          { role: "assistant", text: "Xin chào! Đây là demo " + i + "." },
+        ]);
+      }
+      renderFiles();
+      resetToHome();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,3 @@
+# alembic/versions/.gitkeep
+# File để giữ thư mục versions trong git
+# Thư mục này sẽ chứa các file migration được tạo bởi Alembic

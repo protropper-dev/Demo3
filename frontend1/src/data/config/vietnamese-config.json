@@ -1,0 +1,157 @@
+{
+  "language": {
+    "name": "Vietnamese",
+    "code": "vi",
+    "description": "Vietnamese language processing configuration",
+    "script": "latin",
+    "encoding": "utf-8"
+  },
+  "textProcessing": {
+    "enableDiacriticsRemoval": false,
+    "enableTextNormalization": true,
+    "enableCaseNormalization": true,
+    "enableWhitespaceNormalization": true,
+    "enablePunctuationNormalization": true,
+    "preserveNumbers": true,
+    "preserveDates": true,
+    "preserveEmails": true,
+    "preserveUrls": true
+  },
+  "tokenization": {
+    "strategy": "word",
+    "enableSubwordTokenization": true,
+    "enableSentenceTokenization": true,
+    "enableParagraphTokenization": true,
+    "minTokenLength": 1,
+    "maxTokenLength": 50,
+    "enableSpecialTokens": true
+  },
+  "stopWords": {
+    "enableStopWordRemoval": true,
+    "customStopWords": [
+      "của", "và", "với", "trong", "cho", "từ", "đến", "về", "là", "có", "được", "sẽ", "đã", "đang",
+      "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín", "mười",
+      "này", "đó", "kia", "đây", "đấy", "nào", "gì", "sao", "tại sao", "như thế nào",
+      "khi nào", "ở đâu", "ai", "cái gì", "thế nào", "bao nhiêu", "mấy",
+      "rất", "quá", "cực kỳ", "vô cùng", "hết sức", "tuyệt đối",
+      "nhưng", "tuy nhiên", "mặc dù", "dù", "dẫu", "dù sao",
+      "nếu", "nếu như", "giả sử", "trường hợp", "khi", "lúc", "thời điểm",
+      "vì", "bởi vì", "do", "tại", "nhờ", "bởi", "vì thế", "do đó",
+      "để", "nhằm", "mục đích", "đích", "kết quả", "hậu quả",
+      "cũng", "cũng như", "giống như", "tương tự", "như", "như là",
+      "hoặc", "hay", "hoặc là", "hay là", "chẳng hạn", "ví dụ",
+      "tất cả", "mọi", "mỗi", "từng", "cả", "toàn bộ", "toàn thể",
+      "một số", "một vài", "vài", "ít", "nhiều", "rất nhiều", "vô số",
+      "không", "chưa", "chẳng", "đâu", "đâu có", "không có", "chưa có",
+      "có thể", "có lẽ", "có thể là", "có khả năng", "có thể xảy ra",
+      "phải", "cần", "cần thiết", "quan trọng", "cần thiết phải",
+      "nên", "nên làm", "nên có", "nên được", "nên phải",
+      "được", "được phép", "được cho phép", "được quyền",
+      "bị", "bị bắt", "bị buộc", "bị ép", "bị cưỡng ép",
+      "đã", "đã từng", "đã có", "đã được", "đã phải",
+      "sẽ", "sẽ có", "sẽ được", "sẽ phải", "sẽ làm",
+      "đang", "đang có", "đang được", "đang phải", "đang làm"
+    ]
+  },
+  "stemming": {
+    "enableStemming": false,
+    "stemmerType": "porter",
+    "enableLemmatization": false,
+    "lemmatizerType": "spacy"
+  },
+  "posTagging": {
+    "enablePOSTagging": false,
+    "taggerType": "spacy",
+    "enableNamedEntityRecognition": false,
+    "nerType": "spacy"
+  },
+  "sentiment": {
+    "enableSentimentAnalysis": false,
+    "sentimentModel": "vietnamese-sentiment",
+    "enableEmotionDetection": false,
+    "emotionModel": "vietnamese-emotion"
+  },
+  "entities": {
+    "enableEntityExtraction": true,
+    "entityTypes": ["person", "organization", "location", "date", "time", "number", "email", "url"],
+    "enableCustomEntities": true,
+    "customEntityPatterns": {
+      "phone": "\\b\\d{3,4}[-.\\s]?\\d{3,4}[-.\\s]?\\d{3,4}\\b",
+      "id_card": "\\b\\d{9,12}\\b",
+      "bank_account": "\\b\\d{10,16}\\b"
+    }
+  },
+  "dates": {
+    "enableDateExtraction": true,
+    "dateFormats": [
+      "dd/mm/yyyy",
+      "dd-mm-yyyy",
+      "dd.mm.yyyy",
+      "dd/mm/yy",
+      "dd-mm-yy",
+      "dd.mm.yy",
+      "tháng mm năm yyyy",
+      "ngày dd tháng mm năm yyyy"
+    ],
+    "enableRelativeDates": true,
+    "relativeDateKeywords": ["hôm nay", "hôm qua", "ngày mai", "tuần trước", "tuần sau", "tháng trước", "tháng sau", "năm trước", "năm sau"]
+  },
+  "numbers": {
+    "enableNumberExtraction": true,
+    "numberFormats": ["integer", "decimal", "percentage", "currency", "ordinal"],
+    "enableVietnameseNumbers": true,
+    "vietnameseNumberWords": {
+      "không": 0, "một": 1, "hai": 2, "ba": 3, "bốn": 4, "năm": 5,
+      "sáu": 6, "bảy": 7, "tám": 8, "chín": 9, "mười": 10,
+      "trăm": 100, "nghìn": 1000, "triệu": 1000000, "tỷ": 1000000000
+    }
+  },
+  "locations": {
+    "enableLocationExtraction": true,
+    "locationTypes": ["city", "province", "country", "district", "ward"],
+    "vietnameseLocations": [
+      "hà nội", "hồ chí minh", "đà nẵng", "hải phòng", "cần thơ",
+      "an giang", "bà rịa - vũng tàu", "bạc liêu", "bắc giang", "bắc kạn",
+      "bắc ninh", "bến tre", "bình định", "bình dương", "bình phước",
+      "bình thuận", "cà mau", "cao bằng", "đắk lắk", "đắk nông",
+      "điện biên", "đồng nai", "đồng tháp", "gia lai", "hà giang",
+      "hà nam", "hà tĩnh", "hải dương", "hậu giang", "hòa bình",
+      "hưng yên", "khánh hòa", "kiên giang", "kon tum", "lai châu",
+      "lâm đồng", "lạng sơn", "lào cai", "long an", "nam định",
+      "nghệ an", "ninh bình", "ninh thuận", "phú thọ", "phú yên",
+      "quảng bình", "quảng nam", "quảng ngãi", "quảng ninh", "quảng trị",
+      "sóc trăng", "sơn la", "tây ninh", "thái bình", "thái nguyên",
+      "thanh hóa", "thừa thiên huế", "tiền giang", "trà vinh", "tuyên quang",
+      "vĩnh long", "vĩnh phúc", "yên bái"
+    ]
+  },
+  "security": {
+    "enableSecurityTerms": true,
+    "securityKeywords": [
+      "an toàn thông tin", "bảo mật", "mã hóa", "giải mã", "khóa", "chứng chỉ",
+      "xác thực", "phân quyền", "truy cập", "đăng nhập", "mật khẩu", "token",
+      "firewall", "antivirus", "malware", "virus", "trojan", "backdoor",
+      "phishing", "spam", "ddos", "sql injection", "xss", "csrf",
+      "vulnerability", "exploit", "patch", "update", "backup", "recovery",
+      "audit", "log", "monitoring", "detection", "prevention", "response",
+      "incident", "breach", "leak", "exposure", "risk", "threat",
+      "compliance", "regulation", "policy", "procedure", "standard", "framework"
+    ],
+    "enableSensitiveDataDetection": true,
+    "sensitiveDataPatterns": {
+      "email": "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b",
+      "phone": "\\b\\d{3,4}[-.\\s]?\\d{3,4}[-.\\s]?\\d{3,4}\\b",
+      "id_card": "\\b\\d{9,12}\\b",
+      "bank_account": "\\b\\d{10,16}\\b",
+      "credit_card": "\\b\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}\\b"
+    }
+  },
+  "quality": {
+    "enableQualityCheck": true,
+    "minTextLength": 10,
+    "maxTextLength": 10000,
+    "enableSpellCheck": false,
+    "enableGrammarCheck": false,
+    "enableReadabilityCheck": true
+  }
+}

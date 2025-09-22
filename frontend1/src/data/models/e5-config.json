@@ -1,0 +1,73 @@
+{
+  "model": {
+    "name": "Multilingual-E5-Large",
+    "version": "1.0.0",
+    "description": "Multilingual text embedding model for Vietnamese and English",
+    "type": "embedding",
+    "framework": "transformers",
+    "architecture": "bert",
+    "parameters": "335M",
+    "languages": ["vi", "en"],
+    "embeddingDimension": 1024
+  },
+  "paths": {
+    "modelPath": "D:/Vian/MODELS/multilingual_e5_large",
+    "tokenizerPath": "D:/Vian/MODELS/multilingual_e5_large",
+    "configPath": "D:/Vian/MODELS/multilingual_e5_large/config.json"
+  },
+  "embedding": {
+    "maxLength": 512,
+    "batchSize": 32,
+    "normalize": true,
+    "device": "cpu",
+    "dtype": "float32",
+    "poolingMode": "mean",
+    "addSpecialTokens": true
+  },
+  "performance": {
+    "maxConcurrentRequests": 10,
+    "timeout": 60000,
+    "retryAttempts": 3,
+    "retryDelay": 1000,
+    "cacheSize": 10000,
+    "enableCache": true
+  },
+  "memory": {
+    "maxMemoryUsage": "4GB",
+    "gpuMemoryFraction": 0.6,
+    "cpuMemoryFraction": 0.4
+  },
+  "optimization": {
+    "useQuantization": false,
+    "quantizationType": "int8",
+    "useTensorRT": false,
+    "useONNX": false,
+    "enableJIT": false
+  },
+  "monitoring": {
+    "enableMetrics": true,
+    "logLevel": "INFO",
+    "enableProfiling": false,
+    "metricsInterval": 60
+  },
+  "features": {
+    "enableBatchProcessing": true,
+    "enableStreaming": false,
+    "enableSimilaritySearch": true,
+    "enableClustering": true,
+    "enableVietnameseProcessing": true
+  },
+  "similarity": {
+    "defaultMetric": "cosine",
+    "supportedMetrics": ["cosine", "euclidean", "manhattan", "dot"],
+    "defaultThreshold": 0.7,
+    "maxResults": 100
+  },
+  "indexing": {
+    "enableIndexing": true,
+    "indexType": "faiss",
+    "indexPath": "/data/vectors/indices",
+    "autoSave": true,
+    "saveInterval": 300
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "vinallama": {
+    "modelPath": "/models/vinallama",
+    "tokenizerPath": "/models/vinallama/tokenizer",
+    "configPath": "/models/vinallama/config.json",
+    "weightsPath": "/models/vinallama/pytorch_model.bin",
+    "safetensorsPath": "/models/vinallama/model.safetensors",
+    "indexPath": "/models/vinallama/model.index"
+  },
+  "e5Embedding": {
+    "modelPath": "D:/Vian/MODELS/multilingual_e5_large",
+    "tokenizerPath": "D:/Vian/MODELS/multilingual_e5_large",
+    "configPath": "D:/Vian/MODELS/multilingual_e5_large/config.json",
+    "weightsPath": "D:/Vian/MODELS/multilingual_e5_large/model.safetensors",
+    "safetensorsPath": "D:/Vian/MODELS/multilingual_e5_large/model.safetensors",
+    "indexPath": "D:/Vian/MODELS/multilingual_e5_large"
+  },
+  "rag": {
+    "vectorIndexPath": "/data/vectors/indices",
+    "documentIndexPath": "/data/documents/indices",
+    "cachePath": "/data/cache",
+    "tempPath": "/data/temp"
+  },
+  "data": {
+    "documentsPath": "/data/documents",
+    "vectorsPath": "/data/vectors",
+    "embeddingsPath": "/data/vectors/embeddings",
+    "chunksPath": "/data/documents/chunks",
+    "metadataPath": "/data/documents/metadata",
+    "processedPath": "/data/documents/processed"
+  },
+  "cache": {
+    "queryCachePath": "/data/cache/query-cache",
+    "embeddingCachePath": "/data/cache/embedding-cache",
+    "vinallamaCachePath": "/data/cache/vinallama-cache",
+    "ragCachePath": "/data/cache/rag-cache"
+  },
+  "logs": {
+    "applicationLogs": "/logs/application",
+    "modelLogs": "/logs/models",
+    "errorLogs": "/logs/errors",
+    "accessLogs": "/logs/access"
+  },
+  "backup": {
+    "modelBackupPath": "/backup/models",
+    "dataBackupPath": "/backup/data",
+    "configBackupPath": "/backup/configs"
+  }
+}

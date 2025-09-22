@@ -1,0 +1,108 @@
+{
+  "embedding": {
+    "name": "Multilingual E5 Embedding Configuration",
+    "version": "1.0.0",
+    "description": "Configuration for Multilingual E5 text embedding model",
+    "model": "multilingual_e5_large"
+  },
+  "model": {
+    "name": "Multilingual-E5-Large",
+    "version": "1.0.0",
+    "type": "embedding",
+    "framework": "transformers",
+    "architecture": "bert",
+    "parameters": "335M",
+    "embeddingDimension": 1024,
+    "maxSequenceLength": 512,
+    "vocabSize": 250002
+  },
+  "processing": {
+    "batchSize": 32,
+    "maxLength": 512,
+    "truncation": true,
+    "padding": true,
+    "normalize": true,
+    "device": "cpu",
+    "dtype": "float32",
+    "enableBatchProcessing": true,
+    "enableStreaming": false
+  },
+  "tokenization": {
+    "addSpecialTokens": true,
+    "returnAttentionMask": true,
+    "returnTokenTypeIds": false,
+    "returnLength": false,
+    "paddingStrategy": "max_length",
+    "truncationStrategy": "longest_first"
+  },
+  "similarity": {
+    "defaultMetric": "cosine",
+    "supportedMetrics": ["cosine", "euclidean", "manhattan", "dot"],
+    "defaultThreshold": 0.7,
+    "maxResults": 100,
+    "enableNormalization": true
+  },
+  "indexing": {
+    "enableIndexing": true,
+    "indexType": "faiss",
+    "indexPath": "/data/vectors/indices",
+    "autoSave": true,
+    "saveInterval": 300,
+    "enableCompression": false,
+    "compressionType": "pq"
+  },
+  "caching": {
+    "enableCache": true,
+    "cacheSize": 10000,
+    "cacheExpiration": 3600,
+    "cachePath": "/data/cache/embedding-cache",
+    "enablePersistentCache": true,
+    "enableMemoryCache": true
+  },
+  "performance": {
+    "maxConcurrentRequests": 10,
+    "timeout": 60000,
+    "retryAttempts": 3,
+    "retryDelay": 1000,
+    "enableProfiling": false,
+    "enableMetrics": true
+  },
+  "memory": {
+    "maxMemoryUsage": "4GB",
+    "gpuMemoryFraction": 0.6,
+    "cpuMemoryFraction": 0.4,
+    "enableMemoryOptimization": true,
+    "enableGradientCheckpointing": false
+  },
+  "optimization": {
+    "useQuantization": false,
+    "quantizationType": "int8",
+    "useTensorRT": false,
+    "useONNX": false,
+    "enableJIT": false,
+    "enableMixedPrecision": false
+  },
+  "monitoring": {
+    "enableMetrics": true,
+    "enableLogging": true,
+    "logLevel": "INFO",
+    "metricsInterval": 60,
+    "enablePerformanceTracking": true,
+    "enableErrorTracking": true
+  },
+  "features": {
+    "enableVietnameseProcessing": true,
+    "enableMultilingualSupport": true,
+    "enableBatchEmbedding": true,
+    "enableSimilaritySearch": true,
+    "enableClustering": true,
+    "enableDimensionalityReduction": false
+  },
+  "quality": {
+    "enableQualityCheck": true,
+    "minEmbeddingNorm": 0.1,
+    "maxEmbeddingNorm": 10.0,
+    "enableOutlierDetection": false,
+    "outlierThreshold": 3.0
+  }
+}
