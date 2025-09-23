@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 import logging
+import torch
 from sqlalchemy.orm import Session
 
 from app.services.rag_service_unified import get_rag_service_unified
@@ -638,3 +639,101 @@ async def get_uploaded_files():
     except Exception as e:
         logger.error(f"Lỗi khi lấy danh sách file upload: {e}")
         raise HTTPException(status_code=500, detail=f"Lỗi lấy files: {str(e)}")
+
+# ===== DEBUG & ADMIN ENDPOINTS =====
+
+@router.post("/debug/reload-llm",
+             summary="Reload LLM Service",
+             description="Force reload LLM service for debugging")
+async def reload_llm_service():
+    """
+    **Force Reload LLM Service**
+    
+    Debug endpoint để reload LLM service
+    Useful khi LLM không hoạt động
+    """
+    try:
+        from app.services.rag_service_unified import _rag_service_unified
+        
+        if _rag_service_unified:
+            # Reset LLM service
+            _rag_service_unified.llm_service = None
+            _rag_service_unified.use_llm_generation = True
+            
+            # Reinitialize
+            await _rag_service_unified.initialize()
+            
+            # Check status
+            llm_status = "available" if _rag_service_unified.llm_service else "not_available"
+            
+            return {
+                "message": "LLM service reload attempted",
+                "llm_status": llm_status,
+                "use_llm_generation": _rag_service_unified.use_llm_generation
+            }
+        else:
+            return {
+                "message": "RAG service not initialized yet",
+                "llm_status": "unknown"
+            }
+            
+    except Exception as e:
+        logger.error(f"❌ Reload LLM error: {e}")
+        return {
+            "message": f"Reload failed: {str(e)}",
+            "llm_status": "error"
+        }
+
+@router.get("/debug/llm-status",
+            summary="Check LLM Status",
+            description="Kiểm tra trạng thái LLM service")
+async def check_llm_status():
+    """
+    **Check LLM Service Status**
+    
+    Debug endpoint để kiểm tra:
+    - LLM service có được load không
+    - Memory usage
+    - Configuration
+    """
+    try:
+        from app.services.rag_service_unified import _rag_service_unified
+        
+        if not _rag_service_unified:
+            return {
+                "status": "rag_service_not_initialized",
+                "llm_available": False
+            }
+        
+        # Check LLM service
+        llm_available = _rag_service_unified.llm_service is not None
+        use_llm = _rag_service_unified.use_llm_generation
+        
+        # GPU info
+        gpu_info = {}
+        if torch.cuda.is_available():
+            device = torch.cuda.current_device()
+            total_memory = torch.cuda.get_device_properties(device).total_memory / 1024**3
+            allocated_memory = torch.cuda.memory_allocated(device) / 1024**3
+            
+            gpu_info = {
+                "gpu_name": torch.cuda.get_device_name(device),
+                "total_memory_gb": round(total_memory, 2),
+                "allocated_memory_gb": round(allocated_memory, 2),
+                "free_memory_gb": round(total_memory - allocated_memory, 2)
+            }
+        
+        return {
+            "status": "initialized",
+            "llm_available": llm_available,
+            "use_llm_generation": use_llm,
+            "gpu_info": gpu_info,
+            "model_path": "D:/Vian/MODELS/vinallama-2.7b-chat"
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ LLM status check error: {e}")
+        return {
+            "status": "error",
+            "error": str(e)
+        }

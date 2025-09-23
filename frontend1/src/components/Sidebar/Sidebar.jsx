@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import chatHistoryService from '../../services/chatHistoryService';
+import filesService from '../../services/filesService';
 import './Sidebar.css';
 
 const Sidebar = ({ onNewChat, onChatSelect, selectedChat, isCollapsed, onToggleCollapse }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showMoreChats, setShowMoreChats] = useState(false);
-  const [showMoreFiles, setShowMoreFiles] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [showFilesDropdown, setShowFilesDropdown] = useState(false);
+  const [recentFiles, setRecentFiles] = useState([]);
+  const [allFilesData, setAllFilesData] = useState(null);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const [loadingChats, setLoadingChats] = useState(false);
@@ -31,9 +33,9 @@ const Sidebar = ({ onNewChat, onChatSelect, selectedChat, isCollapsed, onToggleC
     }
   };
 
-  // Fetch uploaded files from new RAG Unified API
+  // Fetch all files data from new Files API
   useEffect(() => {
-    const fetchUploadedFiles = async () => {
+    const fetchAllFiles = async () => {
       setLoadingFiles(true);
       
       // Kiểm tra backend health trước
@@ -45,35 +47,31 @@ const Sidebar = ({ onNewChat, onChatSelect, selectedChat, isCollapsed, onToggleC
       }
       
       try {
-        const response = await fetch('http://localhost:8000/api/v1/rag/files/uploaded', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          },
-          credentials: 'include',
-          cache: 'no-store'
+        const data = await filesService.getAllFiles();
+        
+        // Lưu dữ liệu tất cả files
+        setAllFilesData(data);
+        
+        // Lưu recent uploads (10 files gần nhất)
+        setRecentFiles(data.recent_uploads || []);
+        
+        console.log('Successfully fetched all files:', {
+          recentUploads: data.recent_uploads?.length || 0,
+          totalFiles: data.total_files || 0,
+          categories: Object.keys(data.categories || {})
         });
         
-        if (response.ok) {
-          const data = await response.json();
-          setUploadedFiles(data.files?.map(f => f.filename) || []);
-          console.log('Successfully fetched uploaded files:', data.total || 0, 'files');
-        } else {
-          console.error(`Failed to fetch uploaded files: ${response.status} ${response.statusText}`);
-          setUploadedFiles([]);
-        }
       } catch (error) {
-        console.error('Error fetching uploaded files:', error);
-        setUploadedFiles([]);
+        console.error('Error fetching files:', error);
+        setRecentFiles([]);
+        setAllFilesData(null);
       } finally {
         setLoadingFiles(false);
       }
     };
 
     // Delay một chút để đảm bảo backend đã sẵn sàng
-    const timer = setTimeout(fetchUploadedFiles, 1000);
+    const timer = setTimeout(fetchAllFiles, 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -214,7 +212,7 @@ const Sidebar = ({ onNewChat, onChatSelect, selectedChat, isCollapsed, onToggleC
   );
 
   const displayedChats = showMoreChats ? filteredChats : filteredChats.slice(0, 4);
-  const displayedFiles = showMoreFiles ? uploadedFiles : uploadedFiles.slice(0, 3);
+  const displayedRecentFiles = recentFiles.slice(0, 10); // Hiển thị tối đa 10 files gần đây
 
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
@@ -365,18 +363,34 @@ const Sidebar = ({ onNewChat, onChatSelect, selectedChat, isCollapsed, onToggleC
         <div className="files-section">
           <h3 className="section-title">
             <span className="folder-icon">📁</span>
-            Tập tin
+            Tệp tin
           </h3>
+          
+          {/* Recent Files */}
           <div className="files-list">
             {loadingFiles ? (
               <div className="loading-files">
                 <span className="loading-text">Đang tải...</span>
               </div>
-            ) : displayedFiles.length > 0 ? (
-              displayedFiles.map((file, index) => (
+            ) : displayedRecentFiles.length > 0 ? (
+              displayedRecentFiles.map((file, index) => (
                 <div key={index} className="file-item">
-                  <span className="file-icon">{getFileIcon(file)}</span>
-                  <span className="file-name">{file}</span>
+                  <span className="file-icon">{filesService.getFileIcon(file.filename)}</span>
+                  <div className="file-info">
+                    <span className="file-name" title={file.filename}>
+                      {file.filename.length > 20 ? file.filename.substring(0, 20) + '...' : file.filename}
+                    </span>
+                    <span className="file-meta">
+                      {filesService.formatFileSize(file.size)} • {filesService.formatTime(file.uploaded_at)}
+                    </span>
+                  </div>
+                  <div className="file-status">
+                    {file.is_embedded ? (
+                      <span className="status-embedded" title="Đã embedding">✅</span>
+                    ) : (
+                      <span className="status-pending" title="Chưa embedding">⏳</span>
+                    )}
+                  </div>
                 </div>
               ))
             ) : (
@@ -386,13 +400,19 @@ const Sidebar = ({ onNewChat, onChatSelect, selectedChat, isCollapsed, onToggleC
             )}
           </div>
           
-          {uploadedFiles.length > 3 && (
-            <button 
-              className="see-more-btn"
-              onClick={() => setShowMoreFiles(!showMoreFiles)}
-            >
-              {showMoreFiles ? 'Thu gọn' : 'Xem thêm'}
-            </button>
+          {/* View All Files Button */}
+          {allFilesData && allFilesData.total_files > 0 && (
+            <div className="files-actions">
+              <button 
+                className="view-all-files-btn"
+                onClick={() => setShowFilesDropdown(!showFilesDropdown)}
+              >
+                <span className="btn-icon">📋</span>
+                Xem thêm ({allFilesData.total_files} files)
+                <span className={`dropdown-arrow ${showFilesDropdown ? 'open' : ''}`}>▼</span>
+              </button>
+              
+            </div>
           )}
         </div>
       )}
@@ -401,6 +421,71 @@ const Sidebar = ({ onNewChat, onChatSelect, selectedChat, isCollapsed, onToggleC
       <button className="toggle-btn" onClick={onToggleCollapse}>
         {isCollapsed ? '▶' : '◀'}
       </button>
+
+      {/* Files Popup Modal */}
+      {showFilesDropdown && (
+        <div className="files-popup-overlay" onClick={() => setShowFilesDropdown(false)}>
+          <div className="files-popup-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="popup-header">
+              <h3>Tất cả tệp tin</h3>
+              <button 
+                className="close-popup"
+                onClick={() => setShowFilesDropdown(false)}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="popup-content">
+              {Object.entries(allFilesData.all_files || {}).map(([category, files]) => (
+                <div key={category} className="popup-category-section">
+                  <div className="popup-category-header">
+                    <span className="category-icon">
+                      {category === 'Luật' ? '⚖️' : 
+                       category === 'Tài liệu Tiếng Anh' ? '🇬🇧' :
+                       category === 'Tài liệu Tiếng Việt' ? '🇻🇳' :
+                       category === 'Files Upload' ? '📤' : '📁'}
+                    </span>
+                    <span className="category-name">{category}</span>
+                    <span className="category-count">({files.length} files)</span>
+                  </div>
+                  
+                  <div className="popup-category-files">
+                    {files.map((file, index) => (
+                      <div key={index} className="popup-file-item">
+                        <span className="file-icon">{filesService.getFileIcon(file.filename)}</span>
+                        <div className="file-info">
+                          <span className="file-name" title={file.filename}>
+                            {file.filename}
+                          </span>
+                          <span className="file-meta">
+                            {filesService.formatFileSize(file.size)} • 
+                            {filesService.formatTime(file.modified || file.uploaded_at)}
+                            {file.is_embedded && <span className="embedded-badge">✅</span>}
+                          </span>
+                        </div>
+                        <div className="file-status">
+                          {file.is_embedded ? (
+                            <span className="status-embedded" title="Đã embedding">✅</span>
+                          ) : (
+                            <span className="status-pending" title="Chưa embedding">⏳</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="popup-footer">
+              <div className="total-stats">
+                Tổng cộng: {allFilesData.total_files} files
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

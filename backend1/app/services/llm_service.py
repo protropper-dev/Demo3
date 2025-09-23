@@ -54,25 +54,26 @@ class LLMService:
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
             
-            # Load model
+            # Load model với quantization config
             if quantization_config is not None:
-                # Sử dụng quantization
+                logger.info("Loading model with 4-bit quantization...")
+                # Sử dụng quantization - KHÔNG dùng device_map="auto" để tránh lỗi .to()
                 self.model = AutoModelForCausalLM.from_pretrained(
                     self.model_path,
                     quantization_config=quantization_config,
-                    device_map="auto",
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    torch_dtype=torch.float16
                 )
                 
-                # Tạo pipeline với quantization
-                # Khi sử dụng quantization với device_map="auto", không chỉ định device
-                self.pipeline = pipeline(
-                    "text-generation",
-                    model=self.model,
-                    tokenizer=self.tokenizer,
-                    trust_remote_code=True
-                )
+                # Move model to CUDA manually nếu available
+                if self.device == "cuda":
+                    # Quantized model đã ở đúng device, không cần .to()
+                    pass
+                
+                logger.info("✅ Quantized model loaded successfully")
+                
             else:
+                logger.info("Loading model without quantization...")
                 # Không sử dụng quantization
                 self.model = AutoModelForCausalLM.from_pretrained(
                     self.model_path,
@@ -81,25 +82,9 @@ class LLMService:
                     trust_remote_code=True
                 )
                 
-                # Tạo pipeline
-                # Khi sử dụng device_map="auto", không được chỉ định device parameter
-                if self.device == "cuda":
-                    self.pipeline = pipeline(
-                        "text-generation",
-                        model=self.model,
-                        tokenizer=self.tokenizer,
-                        torch_dtype=torch.float16,
-                        trust_remote_code=True
-                    )
-                else:
-                    self.pipeline = pipeline(
-                        "text-generation",
-                        model=self.model,
-                        tokenizer=self.tokenizer,
-                        device=-1,
-                        torch_dtype=torch.float32,
-                        trust_remote_code=True
-                    )
+                # Chỉ move model khi không dùng quantization
+                if self.device == "cuda" and not hasattr(self.model, 'hf_device_map'):
+                    self.model = self.model.to(self.device)
             
             logger.info("Model đã được load thành công")
             
@@ -119,27 +104,41 @@ class LLMService:
             # Tạo prompt từ query và context
             prompt = self._create_prompt(query, context_docs)
             
-            # Tokenize input
-            from app.utils.model_utils import safe_tokenize_to_device
-            encoding = safe_tokenize_to_device(self.tokenizer, prompt, self.model)
+            # Tokenize input - safe cho quantized models
+            inputs = self.tokenizer(prompt, return_tensors="pt", padding=True, truncation=True, max_length=2048)
             
-            # Cấu hình generation theo RAG_train.ipynb
+            # Move inputs to correct device
+            device = None
+            if hasattr(self.model, 'device'):
+                device = self.model.device
+            elif hasattr(self.model, 'hf_device_map'):
+                # Model with device_map, get first device
+                device = next(iter(self.model.hf_device_map.values()))
+            elif torch.cuda.is_available():
+                device = 'cuda'
+            else:
+                device = 'cpu'
+            
+            if device:
+                inputs = {k: v.to(device) for k, v in inputs.items()}
+            
+            # Cấu hình generation cho responses tự nhiên và chi tiết
             generation_config = self.model.generation_config
             generation_config.max_new_tokens = max_new_tokens
-            generation_config.num_beams = 3  # Beam search để tăng tính chính xác
-            generation_config.early_stopping = True
-            generation_config.do_sample = False  # Không dùng sampling, dùng beam search
+            generation_config.do_sample = True  # Enable sampling cho creativity
+            generation_config.temperature = 0.7  # Balanced creativity
+            generation_config.top_p = 0.9  # Nucleus sampling
+            generation_config.top_k = 50  # Top-k sampling
+            generation_config.repetition_penalty = 1.1  # Giảm lặp nhẹ
+            generation_config.no_repeat_ngram_size = 2
             generation_config.num_return_sequences = 1
-            generation_config.temperature = None  # Bỏ qua khi do_sample = False
-            generation_config.top_p = 1.0
-            generation_config.repetition_penalty = 1.2  # Giảm lặp
-            generation_config.no_repeat_ngram_size = 3
+            generation_config.early_stopping = True
             
             # Generate response
             with torch.no_grad():
                 outputs = self.model.generate(
-                    input_ids=encoding.input_ids,
-                    attention_mask=encoding.attention_mask,
+                    input_ids=inputs['input_ids'],
+                    attention_mask=inputs['attention_mask'],
                     generation_config=generation_config,
                     pad_token_id=self.tokenizer.eos_token_id,
                     eos_token_id=self.tokenizer.eos_token_id
@@ -162,27 +161,50 @@ class LLMService:
     def _create_prompt(self, query: str, context_docs: List[Dict] = None) -> str:
         """Tạo prompt từ query và context documents theo định dạng ChatML"""
         
-        # System prompt
-        system_prompt = """Bạn là một trợ lý AI an toàn thông tin. Chỉ trả lời người dùng dựa trên thông tin được cung cấp dưới đây. Nếu không biết, hãy trả lời: "Tôi không có thông tin về câu hỏi này." Không được bịa."""
+        # Enhanced system prompt cho responses tự nhiên
+        system_prompt = """Bạn là chuyên gia an toàn thông tin với kiến thức sâu rộng. Nhiệm vụ của bạn là:
 
-        # Context từ RAG
+1. Đọc và hiểu các tài liệu được cung cấp
+2. Tổng hợp thông tin từ nhiều nguồn một cách thông minh
+3. Trả lời câu hỏi bằng ngôn ngữ tự nhiên, dễ hiểu
+4. Cung cấp thông tin toàn diện và có cấu trúc logic
+5. Sử dụng tiếng Việt chuyên nghiệp
+
+Hãy tạo câu trả lời chi tiết, có cấu trúc và dễ hiểu. Không chỉ trích dẫn mà hãy giải thích và tổng hợp thông tin."""
+
+        # Context từ RAG với metadata
         context_text = ""
         if context_docs:
-            context_chunks = []
-            for doc in context_docs[:3]:  # Chỉ lấy 3 docs đầu
-                chunk_content = doc['content'][:500]  # Giới hạn độ dài chunk
-                context_chunks.append(chunk_content.strip())
-            context_text = "\n---\n".join(context_chunks)
+            context_parts = []
+            for i, doc in enumerate(context_docs[:3], 1):
+                filename = doc.get('metadata', {}).get('filename', f'Tài liệu {i}')
+                content = doc['content'][:800]  # Tăng độ dài để có nhiều context hơn
+                
+                context_parts.append(f"=== Nguồn {i}: {filename} ===\n{content.strip()}")
+            
+            context_text = "\n\n".join(context_parts)
         
-        # Tạo prompt hoàn chỉnh theo định dạng ChatML
+        # Tạo prompt với instructions rõ ràng
         prompt = f"""<|im_start|>system
 {system_prompt}
 <|im_end|>
 <|im_start|>user
-Thông tin:
+Dưới đây là các tài liệu chuyên môn về an toàn thông tin:
+
 {context_text}
 
+Dựa trên các tài liệu trên, hãy trả lời câu hỏi sau một cách chi tiết và dễ hiểu:
+
 Câu hỏi: {query}
+
+Yêu cầu:
+- Trả lời bằng tiếng Việt tự nhiên
+- Tổng hợp thông tin từ các nguồn
+- Cung cấp định nghĩa rõ ràng
+- Giải thích cách hoạt động (nếu có)
+- Đưa ra các loại/phân loại (nếu có)
+- Nêu tác hại và biện pháp phòng chống (nếu có)
+- Cấu trúc logic và dễ đọc
 <|im_end|>
 <|im_start|>assistant
 """
@@ -301,8 +323,8 @@ Câu hỏi: {query}
             # Generate response
             with torch.no_grad():
                 outputs = self.model.generate(
-                    input_ids=encoding.input_ids,
-                    attention_mask=encoding.attention_mask,
+                    input_ids=inputs['input_ids'],
+                    attention_mask=inputs['attention_mask'],
                     generation_config=generation_config,
                     pad_token_id=self.tokenizer.eos_token_id,
                     eos_token_id=self.tokenizer.eos_token_id

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # File Upload
     MAX_FILE_SIZE: int = 10485760  # 10MB
     UPLOAD_DIR: str = "uploads"
+    DOCUMENTS_UPLOAD_DIR: str = "D:/Vian/Demo3/backend1/documents/upload"
     
     # Logging
     LOG_LEVEL: str = "INFO"
@@ -48,7 +49,7 @@ class Settings(BaseSettings):
     CHUNK_OVERLAP: int = 200
     
     # RAG settings
-    TOP_K_RESULTS: int = 5
+    TOP_K_RESULTS: int = 10
     SIMILARITY_THRESHOLD: float = 0.3  # 0.7 Tạm thời giảm để debug
     
     # RAG data paths (từ backend1/data)
@@ -62,7 +63,7 @@ class Settings(BaseSettings):
     USE_OCR: bool = True  # Enable/disable OCR
     
     # Model settings
-    USE_QUANTIZATION: bool = False  # Tắt quantization để tránh lỗi
+    USE_QUANTIZATION: bool = False  # Tắt quantization vì gặp lỗi device_map  # Enable quantization để tiết kiệm memory
     MAX_MEMORY: str = "90%"  # Sử dụng 90% VRAM
     
     # Backend2 integration settings

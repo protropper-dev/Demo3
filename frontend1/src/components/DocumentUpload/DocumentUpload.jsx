@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import './DocumentUpload.css';
+import fileUploadService from '../../services/fileUploadService';
 
 const DocumentUpload = ({ onUpload, isUploading, uploadProgress }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadStatus, setUploadStatus] = useState({});
   const fileInputRef = useRef(null);
 
   const handleDrag = (e) => {
@@ -39,17 +41,16 @@ const DocumentUpload = ({ onUpload, isUploading, uploadProgress }) => {
         'text/plain',
         'application/pdf',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/msword',
-        'text/markdown'
+        'application/msword'
       ];
-      const validExtensions = ['.txt', '.pdf', '.docx', '.doc', '.md'];
+      const validExtensions = ['.txt', '.pdf', '.docx', '.doc'];
       const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
       
       return validTypes.includes(file.type) || validExtensions.includes(fileExtension);
     });
 
     if (validFiles.length !== fileArray.length) {
-      alert('Một số file không được hỗ trợ. Chỉ chấp nhận: .txt, .pdf, .docx, .doc, .md');
+      alert('Một số file không được hỗ trợ. Chỉ chấp nhận: .txt, .pdf, .docx, .doc');
     }
 
     setSelectedFiles(prev => [...prev, ...validFiles]);
@@ -64,13 +65,61 @@ const DocumentUpload = ({ onUpload, isUploading, uploadProgress }) => {
 
     for (const file of selectedFiles) {
       try {
-        await onUpload(file);
+        // Cập nhật status upload
+        setUploadStatus(prev => ({
+          ...prev,
+          [file.name]: {
+            status: 'uploading',
+            progress: 0,
+            message: 'Đang tải lên...'
+          }
+        }));
+
+        // Upload file với theo dõi tiến trình
+        const result = await fileUploadService.uploadFile(file, (progressData) => {
+          setUploadStatus(prev => ({
+            ...prev,
+            [file.name]: {
+              status: progressData.status,
+              progress: progressData.progress,
+              message: progressData.message
+            }
+          }));
+        });
+
+        // Gọi callback từ parent component nếu có
+        if (onUpload) {
+          await onUpload(file, result);
+        }
+
+        // Cập nhật status cuối cùng
+        setUploadStatus(prev => ({
+          ...prev,
+          [file.name]: {
+            status: 'completed',
+            progress: 100,
+            message: 'Upload và embedding hoàn thành!'
+          }
+        }));
+
       } catch (error) {
         console.error('Upload error:', error);
+        setUploadStatus(prev => ({
+          ...prev,
+          [file.name]: {
+            status: 'error',
+            progress: 0,
+            message: `Lỗi: ${error.message}`
+          }
+        }));
       }
     }
 
-    setSelectedFiles([]);
+    // Clear files sau khi upload xong
+    setTimeout(() => {
+      setSelectedFiles([]);
+      setUploadStatus({});
+    }, 2000);
   };
 
   const formatFileSize = (bytes) => {
@@ -95,7 +144,7 @@ const DocumentUpload = ({ onUpload, isUploading, uploadProgress }) => {
           ref={fileInputRef}
           type="file"
           multiple
-          accept=".txt,.pdf,.docx,.doc,.md"
+          accept=".txt,.pdf,.docx,.doc"
           onChange={handleFileInput}
           style={{ display: 'none' }}
         />
@@ -107,7 +156,7 @@ const DocumentUpload = ({ onUpload, isUploading, uploadProgress }) => {
             </svg>
           </div>
           <h4>Kéo thả file vào đây hoặc click để chọn</h4>
-          <p>Hỗ trợ: PDF, Word, Text, Markdown (tối đa 10MB mỗi file)</p>
+          <p>Hỗ trợ: PDF, Word, Text (tối đa 10MB mỗi file)</p>
         </div>
       </div>
 
@@ -115,20 +164,43 @@ const DocumentUpload = ({ onUpload, isUploading, uploadProgress }) => {
         <div className="selected-files">
           <h5>File đã chọn ({selectedFiles.length})</h5>
           <div className="file-list">
-            {selectedFiles.map((file, index) => (
-              <div key={index} className="file-item">
-                <div className="file-info">
-                  <span className="file-name">{file.name}</span>
-                  <span className="file-size">{formatFileSize(file.size)}</span>
+            {selectedFiles.map((file, index) => {
+              const fileStatus = uploadStatus[file.name] || {};
+              return (
+                <div key={index} className="file-item">
+                  <div className="file-info">
+                    <span className="file-name">{file.name}</span>
+                    <span className="file-size">{formatFileSize(file.size)}</span>
+                    {fileStatus.status && (
+                      <div className="file-status">
+                        <span className={`status-indicator ${fileStatus.status}`}>
+                          {fileStatus.status === 'uploading' && '📤'}
+                          {fileStatus.status === 'processing' && '⚙️'}
+                          {fileStatus.status === 'completed' && '✅'}
+                          {fileStatus.status === 'error' && '❌'}
+                        </span>
+                        <span className="status-message">{fileStatus.message}</span>
+                        {fileStatus.progress > 0 && (
+                          <div className="progress-bar">
+                            <div 
+                              className="progress-fill"
+                              style={{ width: `${fileStatus.progress}%` }}
+                            ></div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <button 
+                    className="remove-file"
+                    onClick={() => removeFile(index)}
+                    disabled={fileStatus.status === 'uploading' || fileStatus.status === 'processing'}
+                  >
+                    ✕
+                  </button>
                 </div>
-                <button 
-                  className="remove-file"
-                  onClick={() => removeFile(index)}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
           
           <div className="upload-actions">
