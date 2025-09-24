@@ -4,7 +4,7 @@ import { ENV_CONFIG } from '../config/environment';
 class ChatHistoryService {
   constructor() {
     this.baseURL = ENV_CONFIG.API_URL || 'http://localhost:8000';
-    this.apiPath = '/api/v1/rag';
+    this.apiPath = '/api/v1/chat';
   }
 
   // ===== Chat Management =====
@@ -43,7 +43,7 @@ class ChatHistoryService {
       if (sessionId) payload.session_id = sessionId;
       if (ragSettings) payload.rag_settings = ragSettings;
 
-      const response = await fetch(`${this.baseURL}${this.apiPath}/chat`, {
+      const response = await fetch(`${this.baseURL}${this.apiPath}/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ class ChatHistoryService {
       if (userId) params.append('user_id', userId.toString());
       if (categoryFilter) params.append('category_filter', categoryFilter);
 
-      const response = await fetch(`${this.baseURL}${this.apiPath}/chats?${params}`, {
+      const response = await fetch(`${this.baseURL}${this.apiPath}/history?${params}`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -146,7 +146,7 @@ class ChatHistoryService {
         per_page: perPage.toString()
       });
 
-      const url = `${this.baseURL}${this.apiPath}/chats/${chatId}/messages?${params}`;
+      const url = `${this.baseURL}${this.apiPath}/${chatId}/messages?${params}`;
       console.log('Fetching messages from:', url);
 
       const response = await fetch(url, {
@@ -181,7 +181,7 @@ class ChatHistoryService {
    */
   async getChatAnalytics(chatId) {
     try {
-      const response = await fetch(`${this.baseURL}${this.apiPath}/chats/${chatId}/analytics`, {
+      const response = await fetch(`${this.baseURL}${this.apiPath}/${chatId}/analytics`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -220,7 +220,7 @@ class ChatHistoryService {
       if (title !== null) params.append('title', title);
       if (isActive !== null) params.append('is_active', isActive.toString());
 
-      const response = await fetch(`${this.baseURL}${this.apiPath}/chats/${chatId}?${params}`, {
+      const response = await fetch(`${this.baseURL}${this.apiPath}/${chatId}?${params}`, {
         method: 'PUT',
         credentials: 'include'
       });
@@ -244,7 +244,7 @@ class ChatHistoryService {
    */
   async deleteChat(chatId) {
     try {
-      const response = await fetch(`${this.baseURL}${this.apiPath}/chats/${chatId}`, {
+      const response = await fetch(`${this.baseURL}${this.apiPath}/${chatId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -327,7 +327,7 @@ class ChatHistoryService {
    */
   async simpleQuery(question, topK = 5, filterCategory = null) {
     try {
-      const response = await fetch(`${this.baseURL}${this.apiPath}/query`, {
+      const response = await fetch(`${this.baseURL}/api/v1/rag/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

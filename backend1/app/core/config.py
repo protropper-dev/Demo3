@@ -5,6 +5,11 @@
 from pydantic_settings import BaseSettings
 from typing import List
 import os
+from .paths import (
+    EMBEDDING_MODEL, LLM_MODEL, DOCUMENTS_ROOT, DOCS_LUAT, 
+    DOCS_ENGLISH, DOCS_VIETNAMESE, DOCUMENTS_UPLOAD, DATA_DIR, 
+    FAISS_INDEX, EMBEDDINGS_PKL, TESSERACT_PATH
+)
 
 class Settings(BaseSettings):
     """Cài đặt chính của ứng dụng"""
@@ -24,7 +29,7 @@ class Settings(BaseSettings):
     # File Upload
     MAX_FILE_SIZE: int = 10485760  # 10MB
     UPLOAD_DIR: str = "uploads"
-    DOCUMENTS_UPLOAD_DIR: str = "D:/Vian/Demo3/backend1/documents/upload"
+    DOCUMENTS_UPLOAD_DIR: str = "documents/upload"
     
     # Logging
     LOG_LEVEL: str = "INFO"
@@ -33,18 +38,19 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"
     
-    # Model paths
-    EMBEDDING_MODEL_PATH: str = "D:/Vian/MODELS/multilingual_e5_large"
-    LLM_MODEL_PATH: str = "D:/Vian/MODELS/vinallama-2.7b-chat"
+    # Model paths - sử dụng paths.py
+    EMBEDDING_MODEL_PATH: str = str(EMBEDDING_MODEL)
+    LLM_MODEL_PATH: str = str(LLM_MODEL)
     
-    # Document paths
-    DOCUMENTS_PATH: str = "D:/Vian/Demo3/documents"
-    LUAT_DOCS_PATH: str = "D:/Vian/Demo3/documents/Luat"
-    ENGLISH_DOCS_PATH: str = "D:/Vian/Demo3/documents/TaiLieuTiengAnh"
-    VIETNAMESE_DOCS_PATH: str = "D:/Vian/Demo3/documents/TaiLieuTiengViet"
+    # Document paths - sử dụng paths.py
+    DOCUMENTS_PATH: str = str(DOCUMENTS_ROOT)
+    LUAT_DOCS_PATH: str = str(DOCS_LUAT)
+    ENGLISH_DOCS_PATH: str = str(DOCS_ENGLISH)
+    VIETNAMESE_DOCS_PATH: str = str(DOCS_VIETNAMESE)
+    DOCUMENTS_UPLOAD_DIR: str = str(DOCUMENTS_UPLOAD)
     
-    # Vector store - sử dụng dữ liệu từ backend1/data
-    VECTOR_STORE_PATH: str = "D:/Vian/Demo3/backend1/data"
+    # Vector store - sử dụng paths.py
+    VECTOR_STORE_PATH: str = str(DATA_DIR)
     CHUNK_SIZE: int = 1000
     CHUNK_OVERLAP: int = 200
     
@@ -52,12 +58,12 @@ class Settings(BaseSettings):
     TOP_K_RESULTS: int = 10
     SIMILARITY_THRESHOLD: float = 0.3  # 0.7 Tạm thời giảm để debug
     
-    # RAG data paths (từ backend1/data)
-    FAISS_PATH: str = "D:/Vian/Demo3/backend1/data/all_faiss.index"
-    PICKLE_PATH: str = "D:/Vian/Demo3/backend1/data/all_embeddings.pkl"
+    # RAG data paths - sử dụng paths.py
+    FAISS_PATH: str = str(FAISS_INDEX)
+    PICKLE_PATH: str = str(EMBEDDINGS_PKL)
     
-    # OCR settings
-    TESSERACT_PATH: str = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Windows path
+    # OCR settings - sử dụng paths.py
+    TESSERACT_PATH: str = TESSERACT_PATH
     OCR_LANGUAGES: str = "vie+eng"  # Vietnamese + English
     OCR_PSM: int = 6  # Page segmentation mode
     USE_OCR: bool = True  # Enable/disable OCR

@@ -182,7 +182,8 @@ class Backend1Service {
   }
 
   async getEnhancedStatus() {
-    return this.makeRequest(this.getFullURL(API_ENDPOINTS.CHATBOT_ENHANCED_STATUS));
+    // Sử dụng endpoint mới thay vì deprecated
+    return this.makeRequest(this.getFullURL('/api/v1/rag/health'));
   }
 
   async getDeviceInfo() {

@@ -46,13 +46,13 @@ def main():
     print(f"\n🎯 Đang sử dụng: {device}")
     
     # Cấu hình đường dẫn (giống new_embeding.py)
-    model_path = "D:/Vian/MODELS/multilingual_e5_large"
+    model_path = "models/multilingual_e5_large"
     input_folders = [
-        "D:/Vian/Demo3/documents/Luat",
-        "D:/Vian/Demo3/documents/TaiLieuTiengAnh", 
-        "D:/Vian/Demo3/documents/TaiLieuTiengViet"
+        "../documents/Luat",
+        "../documents/TaiLieuTiengAnh", 
+        "../documents/TaiLieuTiengViet"
     ]
-    output_dir = "D:/Vian/Demo3/backend/data"
+    output_dir = "data"
     
     print(f"\n📁 Cấu hình đường dẫn:")
     print(f"Model: {model_path}")

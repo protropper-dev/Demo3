@@ -50,7 +50,7 @@ class RAGServiceUnified:
             logger.info("🚀 Đang khởi tạo RAG Service Unified...")
             
             # 1. Load embedding model
-            model_path = "D:/Vian/MODELS/multilingual_e5_large"
+            model_path = "models/multilingual_e5_large"
             logger.info(f"📥 Loading embedding model: {model_path}")
             
             self.tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -63,7 +63,7 @@ class RAGServiceUnified:
             # 2. Initialize LLM Service
             if self.use_llm_generation:
                 try:
-                    llm_model_path = "D:/Vian/MODELS/vinallama-2.7b-chat"
+                    llm_model_path = "models/vinallama-2.7b-chat"
                     logger.info(f"📥 Initializing LLM service: {llm_model_path}")
                     
                     self.llm_service = LLMService(llm_model_path)
@@ -76,7 +76,7 @@ class RAGServiceUnified:
                     self.use_llm_generation = False
             
             # 3. Load dữ liệu
-            data_dir = "D:/Vian/Demo3/backend1/data"
+            data_dir = "data"
             faiss_path = os.path.join(data_dir, "all_faiss.index")
             pickle_path = os.path.join(data_dir, "all_embeddings.pkl")
             
@@ -233,8 +233,7 @@ class RAGServiceUnified:
                 return self._generate_template_answer(question, search_results)
             
             # Tính confidence dựa trên search results quality
-            avg_score = sum(r['score'] for r in search_results[:3]) / min(3, len(search_results))
-            confidence = min(avg_score / 200.0, 1.0)
+            confidence = self._calculate_confidence(search_results, max_sources=3)
             
             logger.info(f"✅ LLM generation successful: {len(llm_response)} chars")
             
@@ -324,8 +323,7 @@ class RAGServiceUnified:
             answer_text = "\n".join(answer_parts)
             
             # 6. Tính confidence dựa trên quality của results
-            avg_score = sum(r['score'] for r in top_results) / len(top_results)
-            confidence = min(avg_score / 200.0, 1.0)  # Normalize to 0-1
+            confidence = self._calculate_confidence(top_results, max_sources=len(top_results))
             
             return {
                 'answer': answer_text,
@@ -341,6 +339,48 @@ class RAGServiceUnified:
                 'confidence': 0.0,
                 'method': 'error'
             }
+    
+    def _calculate_confidence(self, search_results: List[Dict], max_sources: int = 3) -> float:
+        """
+        Tính confidence dựa trên chất lượng search results
+        
+        Logic đúng: Score thấp (tốt) → Confidence cao
+        Score cao (kém) → Confidence thấp
+        
+        Args:
+            search_results: Danh sách kết quả tìm kiếm
+            max_sources: Số lượng sources tối đa để tính confidence
+            
+        Returns:
+            float: Confidence score từ 0.0 đến 1.0
+        """
+        try:
+            if not search_results:
+                return 0.0
+            
+            # Lấy top results để tính confidence
+            top_results = search_results[:max_sources]
+            if not top_results:
+                return 0.0
+            
+            # Tính điểm trung bình
+            avg_score = sum(r['score'] for r in top_results) / len(top_results)
+            
+            # Chuyển đổi: score thấp = confidence cao
+            # Giả sử score tốt nhất là 0, tệ nhất là 200
+            # Công thức: confidence = max(0, 1 - (avg_score / 200))
+            confidence = max(0.0, 1.0 - (avg_score / 200.0))
+            
+            # Đảm bảo confidence không vượt quá 1.0
+            confidence = min(confidence, 1.0)
+            
+            logger.info(f"📊 Confidence calculation: avg_score={avg_score:.2f}, confidence={confidence:.3f}")
+            
+            return confidence
+            
+        except Exception as e:
+            logger.error(f"❌ Lỗi tính confidence: {e}")
+            return 0.0
     
     def _determine_category(self, pdf_name: str) -> str:
         """Xác định category dựa trên tên file"""
@@ -700,7 +740,7 @@ class RAGServiceUnified:
                 'total_chunks': self.total_chunks,
                 'categories': category_stats,
                 'device': str(self.device),
-                'model_path': 'D:/Vian/MODELS/multilingual_e5_large',
+                'model_path': 'models/multilingual_e5_large',
                 'default_settings': {
                     'top_k': self.default_top_k,
                     'similarity_threshold': self.default_similarity_threshold,

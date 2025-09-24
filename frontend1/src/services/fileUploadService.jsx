@@ -38,7 +38,7 @@ class FileUploadService {
       formData.append('file', file);
 
       // Gọi API upload
-      const response = await fetch(`${this.baseURL}/files/upload`, {
+      const response = await fetch(`${this.baseURL}/upload/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -74,7 +74,7 @@ class FileUploadService {
 
     const checkStatus = async () => {
       try {
-        const response = await fetch(`${this.baseURL}/files/status/${fileId}`);
+        const response = await fetch(`${this.baseURL}/upload/status/${fileId}`);
         
         if (response.ok) {
           const status = await response.json();
@@ -130,7 +130,7 @@ class FileUploadService {
    */
   async getUploadedFiles() {
     try {
-      const response = await fetch(`${this.baseURL}/files/files`);
+      const response = await fetch(`${this.baseURL}/upload/files/uploaded`);
       
       if (!response.ok) {
         throw new Error('Lỗi lấy danh sách file');
@@ -151,7 +151,7 @@ class FileUploadService {
    */
   async deleteFile(fileId) {
     try {
-      const response = await fetch(`${this.baseURL}/files/files/${fileId}`, {
+      const response = await fetch(`${this.baseURL}/upload/files/${fileId}`, {
         method: 'DELETE',
       });
 
@@ -174,7 +174,7 @@ class FileUploadService {
    */
   async getHealthStatus() {
     try {
-      const response = await fetch(`${this.baseURL}/files/health`);
+      const response = await fetch(`${this.baseURL}/upload/health`);
       return await response.json();
     } catch (error) {
       console.error('Error checking health:', error);

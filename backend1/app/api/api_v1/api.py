@@ -3,42 +3,24 @@
 # Include tất cả các router con vào API chính
 
 from fastapi import APIRouter, HTTPException
-from app.api.api_v1.endpoints import health, rag_unified, file_upload
+from app.api.api_v1.endpoints import health, rag_unified, file_upload, chat_endpoints, file_management, admin_debug
 
 api_router = APIRouter()
 
-# Redirect endpoints cho backward compatibility
-@api_router.get("/chatbot/status/enhanced", deprecated=True)
-async def chatbot_status_redirect():
-    """[DEPRECATED] Redirect to new RAG unified health"""
-    return {
-        "status": "moved",
-        "message": "This endpoint has been moved to /api/v1/rag/health",
-        "new_endpoint": "/api/v1/rag/health",
-        "deprecated": True
-    }
-
-@api_router.post("/chatbot/query/fixed", deprecated=True)
-async def chatbot_query_redirect():
-    """[DEPRECATED] Redirect to new RAG unified query"""
-    return {
-        "status": "moved",
-        "message": "This endpoint has been moved to /api/v1/rag/query",
-        "new_endpoint": "/api/v1/rag/query",
-        "deprecated": True
-    }
-
-@api_router.get("/chatbot/health/fixed", deprecated=True)
-async def chatbot_health_redirect():
-    """[DEPRECATED] Redirect to new RAG unified health"""
-    return {
-        "status": "moved", 
-        "message": "This endpoint has been moved to /api/v1/rag/health",
-        "new_endpoint": "/api/v1/rag/health",
-        "deprecated": True
-    }
+# Deprecated endpoints đã được xóa vì frontend đã cập nhật sử dụng endpoint mới
 
 # Include các router con
 api_router.include_router(health.router, prefix="/health", tags=["health"])
 api_router.include_router(rag_unified.router, prefix="/rag", tags=["rag-unified"])
-api_router.include_router(file_upload.router, prefix="/files", tags=["file-upload"])
+
+# File management endpoints - sử dụng file_management.py (mới hơn)
+api_router.include_router(file_management.router, prefix="/files", tags=["file-management"])
+
+# Chat endpoints
+api_router.include_router(chat_endpoints.router, prefix="/chat", tags=["chat"])
+
+# Admin & debug endpoints
+api_router.include_router(admin_debug.router, prefix="/admin", tags=["admin"])
+
+# File upload endpoints - sử dụng prefix khác để tránh conflict
+api_router.include_router(file_upload.router, prefix="/upload", tags=["file-upload"])

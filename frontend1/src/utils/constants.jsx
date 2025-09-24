@@ -185,7 +185,7 @@ export const API_ENDPOINTS = {
   // Enhanced Chatbot endpoints
   CHATBOT_ENHANCED_CHAT: '/api/v1/chatbot/enhanced',
   CHATBOT_ENHANCED_STREAM: '/api/v1/chatbot/enhanced/stream',
-  CHATBOT_ENHANCED_STATUS: '/api/v1/chatbot/status/enhanced',
+  // CHATBOT_ENHANCED_STATUS: '/api/v1/chatbot/status/enhanced', // DEPRECATED - sử dụng /api/v1/rag/health
   CHATBOT_ENHANCED_DEVICE: '/api/v1/chatbot/device/enhanced',
   CHATBOT_ENHANCED_INIT: '/api/v1/chatbot/initialize/enhanced',
   CHATBOT_ENHANCED_STATS: '/api/v1/chatbot/stats/enhanced',

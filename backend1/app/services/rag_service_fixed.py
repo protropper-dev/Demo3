@@ -30,14 +30,14 @@ class RAGServiceFixed:
             logger.info("Đang khởi tạo RAG service fixed...")
             
             # Load embedding model
-            model_path = "D:/Vian/MODELS/multilingual_e5_large"
+            model_path = "models/multilingual_e5_large"
             self.tokenizer = AutoTokenizer.from_pretrained(model_path)
             self.model = AutoModel.from_pretrained(model_path)
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             self.model.to(self.device)
             
             # Load dữ liệu
-            data_dir = "D:/Vian/Demo3/backend1/data"
+            data_dir = "data"
             faiss_path = os.path.join(data_dir, "all_faiss.index")
             pickle_path = os.path.join(data_dir, "all_embeddings.pkl")
             
