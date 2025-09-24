@@ -194,7 +194,7 @@ class RAGServiceUnified:
     
     # ==================== PIPELINE 2-STAGE: RAG → LLM ENHANCEMENT ====================
     
-    async def _generate_rag_response(self, question: str, search_results: List[Dict]) -> Dict[str, Any]:
+    def _generate_rag_response(self, question: str, search_results: List[Dict]) -> Dict[str, Any]:
         """Stage 1: Tạo response ban đầu từ RAG"""
         try:
             logger.info(f"📝 Stage 1: Generating RAG response for: {question[:50]}...")
@@ -290,7 +290,7 @@ class RAGServiceUnified:
         
         return min(avg_similarity + diversity_bonus, 1.0)
     
-    async def _enhance_response_with_llm(self, rag_response: Dict[str, Any], question: str) -> Dict[str, Any]:
+    def _enhance_response_with_llm(self, rag_response: Dict[str, Any], question: str) -> Dict[str, Any]:
         """Stage 2: Nâng cao chất lượng response bằng LLM"""
         try:
             logger.info(f"🚀 Stage 2: Enhancing response with LLM...")
@@ -1073,12 +1073,12 @@ Yêu cầu:
                 return self._create_empty_response(question)
             
             # 2. Stage 1: Generate RAG response
-            rag_response = await self._generate_rag_response(question, search_results)
+            rag_response = self._generate_rag_response(question, search_results)
             
             # 3. Stage 2: LLM Enhancement (if enabled)
             if use_enhancement and self.llm_service:
                 try:
-                    final_response = await self._enhance_response_with_llm(rag_response, question)
+                    final_response = self._enhance_response_with_llm(rag_response, question)
                 except Exception as e:
                     logger.warning(f"Enhancement failed: {e}, using RAG response")
                     final_response = {
