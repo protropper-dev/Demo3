@@ -136,7 +136,7 @@ class LLMService:
                 gen_config.no_repeat_ngram_size = 3  # Tăng để tránh lặp cụm từ
                 gen_config.num_return_sequences = 1
                 gen_config.num_beams = 1  # Greedy decoding
-                gen_config.early_stopping = True  # Bật early stopping
+                gen_config.early_stopping = False  # Tắt early stopping khi num_beams=1
             else:
                 # Use custom generation config với defaults tối ưu
                 gen_config = self.model.generation_config
@@ -149,7 +149,7 @@ class LLMService:
                 gen_config.no_repeat_ngram_size = generation_config.get('no_repeat_ngram_size', 3)  # Default tối ưu
                 gen_config.num_return_sequences = generation_config.get('num_return_sequences', 1)
                 gen_config.num_beams = generation_config.get('num_beams', 1)
-                gen_config.early_stopping = generation_config.get('early_stopping', True)  # Default tối ưu
+                gen_config.early_stopping = generation_config.get('early_stopping', False)  # Default tối ưu
             
             # Generate response
             with torch.no_grad():

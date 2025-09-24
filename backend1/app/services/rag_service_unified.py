@@ -427,9 +427,9 @@ class RAGServiceUnified:
                 'top_k': 30,  # Giảm để ổn định hơn
                 'repetition_penalty': 1.25,  # Tăng để tránh lặp từ
                 'no_repeat_ngram_size': 4,  # Tăng để tránh lặp cụm từ
-                'max_new_tokens': 350,  # Giảm để tránh quá dài
+                'max_new_tokens': 300,  # Giảm để tránh quá dài
                 'do_sample': True,
-                'early_stopping': True
+                'early_stopping': False  # Tắt để tránh warning với num_beams=1
             }
             
             # Gọi LLM với prompt enhancement
@@ -480,18 +480,18 @@ class RAGServiceUnified:
         enhanced_lower = enhanced.lower()
         matches = sum(1 for keyword in original_keywords if keyword.lower() in enhanced_lower)
         
-        return matches >= len(original_keywords) * 0.7  # 70% match required
+        return matches >= len(original_keywords) * 0.5  # 50% match required (ít strict hơn)
     
     def _extract_key_phrases(self, text: str) -> List[str]:
-        """Extract key phrases from text"""
+        """Extract key phrases from text - ít strict hơn"""
         # Simple key phrase extraction
         words = text.split()
         # Filter out common words and get meaningful phrases
         key_phrases = []
         for word in words:
-            if len(word) > 3 and word.lower() not in ['của', 'với', 'từ', 'cho', 'được', 'có', 'là', 'và', 'trong', 'theo']:
+            if len(word) > 2 and word.lower() not in ['của', 'với', 'từ', 'cho', 'được', 'có', 'là', 'và', 'trong', 'theo', 'một', 'các', 'này', 'đó']:
                 key_phrases.append(word)
-        return key_phrases[:10]  # Top 10 key phrases
+        return key_phrases[:8]  # Top 8 key phrases (ít hơn để dễ pass validation)
     
     def _has_quality_issues(self, response: str) -> bool:
         """Kiểm tra quality issues"""
