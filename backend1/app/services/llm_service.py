@@ -132,7 +132,8 @@ class LLMService:
             generation_config.repetition_penalty = 1.1  # Giảm lặp nhẹ
             generation_config.no_repeat_ngram_size = 2
             generation_config.num_return_sequences = 1
-            generation_config.early_stopping = True
+            generation_config.num_beams = 1  # Greedy decoding
+            generation_config.early_stopping = False  # Tắt early_stopping vì num_beams=1
             
             # Generate response
             with torch.no_grad():
@@ -313,8 +314,8 @@ Yêu cầu:
             # Cấu hình generation
             generation_config = self.model.generation_config
             generation_config.max_new_tokens = 512
-            generation_config.num_beams = 3
-            generation_config.early_stopping = True
+            generation_config.num_beams = 3  # Beam search với 3 beams
+            generation_config.early_stopping = True  # OK vì num_beams > 1
             generation_config.do_sample = False
             generation_config.num_return_sequences = 1
             generation_config.repetition_penalty = 1.2

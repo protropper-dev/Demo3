@@ -4,6 +4,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from app.core.config import settings
 from app.api.api_v1.api import api_router
 
@@ -36,6 +37,13 @@ async def root():
 async def health_check():
     """Endpoint kiểm tra sức khỏe của API"""
     return {"status": "healthy"}
+
+@app.get("/favicon.ico")
+async def favicon():
+    """Endpoint cho favicon để tránh 404 error"""
+    # Trả về response rỗng để tránh 404 error
+    from fastapi.responses import Response
+    return Response(status_code=204)
 
 if __name__ == "__main__":
     import uvicorn

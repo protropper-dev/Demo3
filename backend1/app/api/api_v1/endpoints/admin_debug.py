@@ -32,7 +32,7 @@ class LLMStatus(BaseModel):
     llm_available: bool
     use_llm_generation: bool
     gpu_info: Optional[Dict[str, Any]] = None
-    model_path: str
+    model_filepath: str  # Đổi tên từ model_path để tránh conflict với protected namespace
     error: Optional[str] = None
 
 class ReloadResponse(BaseModel):
@@ -109,7 +109,7 @@ async def check_llm_status():
                 status="rag_service_not_initialized",
                 llm_available=False,
                 use_llm_generation=False,
-                model_path="models/vinallama-2.7b-chat"
+                model_filepath="models/vinallama-2.7b-chat"
             )
         
         # Check LLM service
@@ -144,7 +144,7 @@ async def check_llm_status():
             status="error",
             llm_available=False,
             use_llm_generation=False,
-            model_path="models/vinallama-2.7b-chat",
+            model_filepath="models/vinallama-2.7b-chat",
             error=str(e)
         )
 
@@ -327,7 +327,7 @@ async def get_system_config():
                     "max_context_length": _rag_service_unified.max_context_length,
                     "use_llm_generation": _rag_service_unified.use_llm_generation
                 },
-                "model_paths": {
+                "model_filepaths": {
                     "embedding_model": settings.EMBEDDING_MODEL_PATH,
                     "llm_model": settings.LLM_MODEL_PATH
                 },
