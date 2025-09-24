@@ -202,7 +202,7 @@ class RAGServiceUnified:
             # Tạo response từ template hoặc basic LLM
             if self.use_llm_generation and self.llm_service:
                 # Basic LLM generation với prompt đơn giản
-                basic_response = await self._generate_basic_llm_response(question, search_results)
+                basic_response = self._generate_basic_llm_response(question, search_results)
             else:
                 # Template-based response
                 basic_response = self._generate_template_response(question, search_results)
@@ -241,11 +241,20 @@ class RAGServiceUnified:
             Trả lời ngắn gọn và chính xác:
             """
             
+            # Cấu hình generation cho basic response
+            basic_generation_config = {
+                'temperature': 0.6,
+                'max_new_tokens': 200,
+                'top_p': 0.9,
+                'top_k': 50,
+                'repetition_penalty': 1.1
+            }
+            
             response = self.llm_service.generate_response(
                 query=question,
                 context_docs=search_results[:3],
-                max_new_tokens=200,  # Ngắn hơn cho basic response
-                temperature=0.6
+                max_new_tokens=200,
+                generation_config=basic_generation_config
             )
             return response
             
@@ -293,7 +302,7 @@ class RAGServiceUnified:
             enhancement_prompt = self._create_enhancement_prompt(rag_response, question)
             
             # 3. Gọi LLM để enhance response
-            enhanced_response = await self._call_llm_for_enhancement(enhancement_prompt)
+            enhanced_response = self._call_llm_for_enhancement(enhancement_prompt)
             
             # 4. Validate enhanced response
             validated_response = self._validate_enhanced_response(enhanced_response, rag_response)
@@ -406,7 +415,7 @@ Yêu cầu:
         
         return f"<|im_start|>system\n{system_prompt}\n<|im_end|>\n<|im_start|>user\n{user_prompt}\n<|im_end|>\n<|im_start|>assistant\n"
     
-    async def _call_llm_for_enhancement(self, enhancement_prompt: str) -> str:
+    def _call_llm_for_enhancement(self, enhancement_prompt: str) -> str:
         """Gọi LLM để enhance response"""
         try:
             # Cấu hình tối ưu cho enhancement
