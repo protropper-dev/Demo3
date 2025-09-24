@@ -368,64 +368,68 @@ class RAGServiceUnified:
             return 'general'
     
     def _create_enhancement_prompt(self, rag_response: Dict[str, Any], question: str) -> str:
-        """Tạo prompt cho LLM enhancement"""
+        """Tạo prompt cho LLM enhancement - tối ưu cho tiếng Việt"""
         original_response = rag_response['raw_response']
         sources = rag_response['sources']
         question_type = self._classify_question_type(question)
         
-        # System prompt cho enhancement
-        system_prompt = f"""Bạn là chuyên gia cải thiện chất lượng câu trả lời. Nhiệm vụ của bạn là:
+        # System prompt cho enhancement - tối ưu cho tiếng Việt
+        system_prompt = f"""Bạn là chuyên gia an toàn thông tin và cải thiện chất lượng câu trả lời. Nhiệm vụ của bạn là:
 
-1. **Phân tích** câu trả lời hiện tại
-2. **Cải thiện** về mặt ngôn ngữ, cấu trúc và nội dung
-3. **Bổ sung** thông tin từ sources nếu cần
-4. **Đảm bảo** tính chính xác và đầy đủ
-5. **Tối ưu** cho loại câu hỏi: {question_type}
+**YÊU CẦU CHÍNH:**
+1. **Sửa lỗi chính tả và ngữ pháp** - Đảm bảo tiếng Việt chuẩn, không có lỗi chính tả
+2. **Cải thiện cấu trúc** - Sử dụng dấu câu đúng, xuống dòng hợp lý, câu hoàn chỉnh
+3. **Làm rõ nội dung** - Giải thích rõ ràng, dễ hiểu, logic
+4. **Bổ sung thông tin** - Thêm thông tin quan trọng từ sources nếu cần
+5. **Tối ưu độ dài** - Tối đa 300 từ, súc tích nhưng đầy đủ
 
-Yêu cầu:
-- Giữ nguyên thông tin chính xác
-- Cải thiện ngôn ngữ tự nhiên hơn
-- Thêm cấu trúc rõ ràng
-- Bổ sung thông tin quan trọng từ sources
-- Độ dài 200-500 từ"""
+**QUY TẮC VIẾT:**
+- Sử dụng thuật ngữ kỹ thuật chính xác (DDoS, tấn công, lưu lượng, máy chủ, ngăn chặn)
+- Viết câu hoàn chỉnh, có chủ ngữ và vị ngữ
+- Sử dụng dấu câu đúng: dấu chấm, phẩy, hai chấm
+- Tránh lặp từ, lặp cụm từ
+- Cấu trúc rõ ràng: định nghĩa → đặc điểm → ví dụ → giải pháp
 
-        # Context từ sources
+**LOẠI CÂU HỎI:** {question_type}"""
+
+        # Context từ sources - rút gọn để tránh quá dài
         sources_context = ""
-        for i, source in enumerate(sources[:3], 1):
-            sources_context += f"\n=== Nguồn {i}: {source['pdf_name']} ===\n{source['content'][:400]}\n"
+        for i, source in enumerate(sources[:2], 1):  # Chỉ lấy 2 sources đầu
+            sources_context += f"\n**Nguồn {i}:** {source['pdf_name']}\n{source['content'][:300]}...\n"
         
-        # User prompt
-        user_prompt = f"""
-        Câu hỏi: {question}
-        
-        Câu trả lời hiện tại:
-        {original_response}
-        
-        Nguồn tài liệu tham khảo:
-        {sources_context}
-        
-        Hãy cải thiện câu trả lời trên để:
-        - Tự nhiên và dễ hiểu hơn
-        - Có cấu trúc rõ ràng
-        - Bổ sung thông tin quan trọng từ sources
-        - Phù hợp với loại câu hỏi {question_type}
-        
-        Câu trả lời cải thiện:
-        """
+        # User prompt - đơn giản và rõ ràng
+        user_prompt = f"""**Câu hỏi:** {question}
+
+**Câu trả lời hiện tại cần cải thiện:**
+{original_response}
+
+**Nguồn tài liệu tham khảo:**
+{sources_context}
+
+**Hãy cải thiện câu trả lời với yêu cầu:**
+- Sửa tất cả lỗi chính tả và ngữ pháp
+- Viết lại với cấu trúc rõ ràng, dễ hiểu
+- Sử dụng tiếng Việt chuẩn, tự nhiên
+- Tối đa 300 từ, súc tích nhưng đầy đủ
+- Giữ nguyên thông tin kỹ thuật chính xác
+
+**Câu trả lời cải thiện:**"""
         
         return f"<|im_start|>system\n{system_prompt}\n<|im_end|>\n<|im_start|>user\n{user_prompt}\n<|im_end|>\n<|im_start|>assistant\n"
     
     def _call_llm_for_enhancement(self, enhancement_prompt: str) -> str:
         """Gọi LLM để enhance response"""
         try:
-            # Cấu hình tối ưu cho enhancement
+            # Cấu hình tối ưu cho enhancement - tập trung vào chất lượng
             generation_config = {
-                'temperature': 0.7,  # Balanced creativity
-                'top_p': 0.9,
-                'top_k': 50,
-                'repetition_penalty': 1.15,
-                'max_new_tokens': 400,  # Đủ dài cho enhancement
-                'do_sample': True
+                'temperature': 0.4,  # Giảm để ổn định hơn, giảm lỗi chính tả
+                'top_p': 0.75,  # Giảm để tập trung hơn
+                'top_k': 30,  # Giảm để ổn định hơn
+                'repetition_penalty': 1.25,  # Tăng để tránh lặp từ
+                'no_repeat_ngram_size': 4,  # Tăng để tránh lặp cụm từ
+                'max_new_tokens': 350,  # Giảm để tránh quá dài
+                'do_sample': True,
+                'early_stopping': True
             }
             
             # Gọi LLM với prompt enhancement
@@ -446,14 +450,14 @@ Yêu cầu:
         """Validate enhanced response"""
         original_response = rag_response['raw_response']
         
-        # 1. Length validation
-        if len(enhanced_response.strip()) < 50:
+        # 1. Length validation - tối ưu cho tiếng Việt
+        if len(enhanced_response.strip()) < 30:
             logger.warning("Enhanced response too short, using original")
             return original_response
         
-        if len(enhanced_response.strip()) > 1000:
+        if len(enhanced_response.strip()) > 600:
             logger.warning("Enhanced response too long, truncating")
-            enhanced_response = enhanced_response[:1000] + "..."
+            enhanced_response = enhanced_response[:600] + "..."
         
         # 2. Content validation
         if not self._contains_key_information(enhanced_response, original_response):

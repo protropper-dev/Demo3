@@ -123,33 +123,33 @@ class LLMService:
             if device:
                 inputs = {k: v.to(device) for k, v in inputs.items()}
             
-            # Cấu hình generation cho responses tự nhiên và chi tiết
+            # Cấu hình generation cho responses chính xác và ổn định
             if generation_config is None:
-                # Default generation config
+                # Default generation config - tối ưu cho tiếng Việt
                 gen_config = self.model.generation_config
                 gen_config.max_new_tokens = max_new_tokens
-                gen_config.do_sample = True  # Enable sampling cho creativity
-                gen_config.temperature = 0.7  # Balanced creativity
-                gen_config.top_p = 0.9  # Nucleus sampling
-                gen_config.top_k = 50  # Top-k sampling
-                gen_config.repetition_penalty = 1.1  # Giảm lặp nhẹ
-                gen_config.no_repeat_ngram_size = 2
+                gen_config.do_sample = True  # Enable sampling
+                gen_config.temperature = 0.5  # Giảm để ổn định hơn, giảm lỗi chính tả
+                gen_config.top_p = 0.8  # Giảm để tập trung hơn
+                gen_config.top_k = 40  # Giảm để ổn định hơn
+                gen_config.repetition_penalty = 1.2  # Tăng để tránh lặp từ
+                gen_config.no_repeat_ngram_size = 3  # Tăng để tránh lặp cụm từ
                 gen_config.num_return_sequences = 1
                 gen_config.num_beams = 1  # Greedy decoding
-                gen_config.early_stopping = False  # Tắt early_stopping vì num_beams=1
+                gen_config.early_stopping = True  # Bật early stopping
             else:
-                # Use custom generation config
+                # Use custom generation config với defaults tối ưu
                 gen_config = self.model.generation_config
                 gen_config.max_new_tokens = generation_config.get('max_new_tokens', max_new_tokens)
                 gen_config.do_sample = generation_config.get('do_sample', True)
-                gen_config.temperature = generation_config.get('temperature', 0.7)
-                gen_config.top_p = generation_config.get('top_p', 0.9)
-                gen_config.top_k = generation_config.get('top_k', 50)
-                gen_config.repetition_penalty = generation_config.get('repetition_penalty', 1.1)
-                gen_config.no_repeat_ngram_size = generation_config.get('no_repeat_ngram_size', 2)
+                gen_config.temperature = generation_config.get('temperature', 0.5)  # Default tối ưu
+                gen_config.top_p = generation_config.get('top_p', 0.8)  # Default tối ưu
+                gen_config.top_k = generation_config.get('top_k', 40)  # Default tối ưu
+                gen_config.repetition_penalty = generation_config.get('repetition_penalty', 1.2)  # Default tối ưu
+                gen_config.no_repeat_ngram_size = generation_config.get('no_repeat_ngram_size', 3)  # Default tối ưu
                 gen_config.num_return_sequences = generation_config.get('num_return_sequences', 1)
                 gen_config.num_beams = generation_config.get('num_beams', 1)
-                gen_config.early_stopping = generation_config.get('early_stopping', False)
+                gen_config.early_stopping = generation_config.get('early_stopping', True)  # Default tối ưu
             
             # Generate response
             with torch.no_grad():
