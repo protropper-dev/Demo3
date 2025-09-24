@@ -46,6 +46,9 @@ class ChatResponse(BaseModel):
     confidence: float
     processing_time_ms: int
     timestamp: str
+    enhancement_applied: Optional[bool] = Field(default=False, description="Có áp dụng LLM enhancement không")
+    original_response: Optional[str] = Field(default=None, description="Response gốc trước khi enhancement")
+    method: Optional[str] = Field(default="unified", description="Phương pháp tạo response")
 
 class ChatHistoryResponse(BaseModel):
     """Response cho lịch sử chat"""
@@ -130,7 +133,10 @@ async def send_message(request: ChatRequest, db: Session = Depends(get_db)):
             total_sources=result["rag_response"]["total_sources"],
             confidence=result["rag_response"].get("confidence", 0.0),
             processing_time_ms=result["rag_response"].get("processing_time_ms", 0),
-            timestamp=result["rag_response"].get("timestamp", "")
+            timestamp=result["rag_response"].get("timestamp", ""),
+            enhancement_applied=result["rag_response"].get("enhancement_applied", False),
+            original_response=result["rag_response"].get("original_response", None),
+            method=result["rag_response"].get("method", "unified")
         )
         
     except HTTPException:

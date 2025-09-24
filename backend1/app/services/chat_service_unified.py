@@ -224,7 +224,8 @@ class ChatServiceUnified:
                 top_k=rag_settings.get("top_k", 5),
                 filter_category=chat.category_filter,
                 include_sources=rag_settings.get("include_sources", True),
-                similarity_threshold=rag_settings.get("similarity_threshold", 0.3)
+                similarity_threshold=rag_settings.get("similarity_threshold", 0.3),
+                use_enhancement=True  # Luôn sử dụng LLM Enhancement
             )
             
             # Lưu tin nhắn AI với metadata đầy đủ
