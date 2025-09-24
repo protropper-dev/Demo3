@@ -59,12 +59,6 @@ backend/
 conda create -n vian python=3.11
 conda activate vian
 
-# Hoặc sử dụng venv
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# hoặc
-venv\Scripts\activate     # Windows
-```
 
 ### 2. Cài đặt dependencies
 
