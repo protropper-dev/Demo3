@@ -224,7 +224,7 @@ class RAGServiceUnified:
                 'stage': 'rag_generation'
             }
     
-    async def _generate_basic_llm_response(self, question: str, search_results: List[Dict]) -> str:
+    def _generate_basic_llm_response(self, question: str, search_results: List[Dict]) -> str:
         """Tạo response cơ bản từ LLM với prompt đơn giản"""
         try:
             # Simple prompt cho basic generation
