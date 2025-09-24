@@ -23,7 +23,7 @@ LLM_MODEL = MODELS_DIR / "vinallama-2.7b-chat"
 
 # ==================== DOCUMENTS ====================
 DOCUMENTS_ROOT = PROJECT_ROOT / "documents"
-DOCUMENTS_UPLOAD = BACKEND_ROOT / "documents" / "upload"
+DOCUMENTS_UPLOAD = BACKEND_ROOT / "documents" / "uploads"
 
 # Tài liệu theo danh mục
 DOCS_LUAT = DOCUMENTS_ROOT / "Luat"
