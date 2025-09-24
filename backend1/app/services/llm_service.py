@@ -95,7 +95,8 @@ class LLMService:
     def generate_response(self, 
                          query: str, 
                          context_docs: List[Dict] = None,
-                         max_new_tokens: int = 256) -> str:
+                         max_new_tokens: int = 256,
+                         generation_config: Dict = None) -> str:
         """Tạo câu trả lời từ query và context"""
         if self.model is None or self.tokenizer is None:
             self.load_model()
@@ -123,24 +124,39 @@ class LLMService:
                 inputs = {k: v.to(device) for k, v in inputs.items()}
             
             # Cấu hình generation cho responses tự nhiên và chi tiết
-            generation_config = self.model.generation_config
-            generation_config.max_new_tokens = max_new_tokens
-            generation_config.do_sample = True  # Enable sampling cho creativity
-            generation_config.temperature = 0.7  # Balanced creativity
-            generation_config.top_p = 0.9  # Nucleus sampling
-            generation_config.top_k = 50  # Top-k sampling
-            generation_config.repetition_penalty = 1.1  # Giảm lặp nhẹ
-            generation_config.no_repeat_ngram_size = 2
-            generation_config.num_return_sequences = 1
-            generation_config.num_beams = 1  # Greedy decoding
-            generation_config.early_stopping = False  # Tắt early_stopping vì num_beams=1
+            if generation_config is None:
+                # Default generation config
+                gen_config = self.model.generation_config
+                gen_config.max_new_tokens = max_new_tokens
+                gen_config.do_sample = True  # Enable sampling cho creativity
+                gen_config.temperature = 0.7  # Balanced creativity
+                gen_config.top_p = 0.9  # Nucleus sampling
+                gen_config.top_k = 50  # Top-k sampling
+                gen_config.repetition_penalty = 1.1  # Giảm lặp nhẹ
+                gen_config.no_repeat_ngram_size = 2
+                gen_config.num_return_sequences = 1
+                gen_config.num_beams = 1  # Greedy decoding
+                gen_config.early_stopping = False  # Tắt early_stopping vì num_beams=1
+            else:
+                # Use custom generation config
+                gen_config = self.model.generation_config
+                gen_config.max_new_tokens = generation_config.get('max_new_tokens', max_new_tokens)
+                gen_config.do_sample = generation_config.get('do_sample', True)
+                gen_config.temperature = generation_config.get('temperature', 0.7)
+                gen_config.top_p = generation_config.get('top_p', 0.9)
+                gen_config.top_k = generation_config.get('top_k', 50)
+                gen_config.repetition_penalty = generation_config.get('repetition_penalty', 1.1)
+                gen_config.no_repeat_ngram_size = generation_config.get('no_repeat_ngram_size', 2)
+                gen_config.num_return_sequences = generation_config.get('num_return_sequences', 1)
+                gen_config.num_beams = generation_config.get('num_beams', 1)
+                gen_config.early_stopping = generation_config.get('early_stopping', False)
             
             # Generate response
             with torch.no_grad():
                 outputs = self.model.generate(
                     input_ids=inputs['input_ids'],
                     attention_mask=inputs['attention_mask'],
-                    generation_config=generation_config,
+                    generation_config=gen_config,
                     pad_token_id=self.tokenizer.eos_token_id,
                     eos_token_id=self.tokenizer.eos_token_id
                 )
@@ -326,7 +342,7 @@ Yêu cầu:
                 outputs = self.model.generate(
                     input_ids=inputs['input_ids'],
                     attention_mask=inputs['attention_mask'],
-                    generation_config=generation_config,
+                    generation_config=gen_config,
                     pad_token_id=self.tokenizer.eos_token_id,
                     eos_token_id=self.tokenizer.eos_token_id
                 )

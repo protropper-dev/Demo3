@@ -192,8 +192,404 @@ class RAGServiceUnified:
         
         return conclusions.get(main_topic, "Đây là một khía cạnh quan trọng của an toàn thông tin cần được hiểu rõ và triển khai đúng cách.")
     
+    # ==================== PIPELINE 2-STAGE: RAG → LLM ENHANCEMENT ====================
+    
+    async def _generate_rag_response(self, question: str, search_results: List[Dict]) -> Dict[str, Any]:
+        """Stage 1: Tạo response ban đầu từ RAG"""
+        try:
+            logger.info(f"📝 Stage 1: Generating RAG response for: {question[:50]}...")
+            
+            # Tạo response từ template hoặc basic LLM
+            if self.use_llm_generation and self.llm_service:
+                # Basic LLM generation với prompt đơn giản
+                basic_response = await self._generate_basic_llm_response(question, search_results)
+            else:
+                # Template-based response
+                basic_response = self._generate_template_response(question, search_results)
+            
+            return {
+                'raw_response': basic_response,
+                'sources': search_results,
+                'confidence': self._calculate_basic_confidence(search_results),
+                'stage': 'rag_generation'
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ RAG response generation error: {e}")
+            # Fallback to template
+            return {
+                'raw_response': self._generate_template_response(question, search_results),
+                'sources': search_results,
+                'confidence': 0.5,
+                'stage': 'rag_generation'
+            }
+    
+    async def _generate_basic_llm_response(self, question: str, search_results: List[Dict]) -> str:
+        """Tạo response cơ bản từ LLM với prompt đơn giản"""
+        try:
+            # Simple prompt cho basic generation
+            context_text = ""
+            for i, result in enumerate(search_results[:3], 1):
+                context_text += f"\n=== Nguồn {i}: {result['pdf_name']} ===\n{result['content'][:400]}\n"
+            
+            basic_prompt = f"""
+            Dựa trên các tài liệu sau, hãy trả lời câu hỏi: {question}
+            
+            Tài liệu:
+            {context_text}
+            
+            Trả lời ngắn gọn và chính xác:
+            """
+            
+            response = self.llm_service.generate_response(
+                query=question,
+                context_docs=search_results[:3],
+                max_new_tokens=200,  # Ngắn hơn cho basic response
+                temperature=0.6
+            )
+            return response
+            
+        except Exception as e:
+            logger.warning(f"Basic LLM generation failed: {e}")
+            return self._generate_template_response(question, search_results)
+    
+    def _generate_template_response(self, question: str, search_results: List[Dict]) -> str:
+        """Tạo response từ template (fallback)"""
+        if not search_results:
+            return "Xin lỗi, tôi không tìm thấy thông tin liên quan đến câu hỏi của bạn."
+        
+        # Lấy top result
+        top_result = search_results[0]
+        content = top_result['content'][:500]  # Giới hạn độ dài
+        
+        # Tạo response cơ bản
+        response = f"Dựa trên tài liệu {top_result['pdf_name']}, {content}"
+        
+        return response
+    
+    def _calculate_basic_confidence(self, search_results: List[Dict]) -> float:
+        """Tính confidence cơ bản cho RAG response"""
+        if not search_results:
+            return 0.0
+        
+        # Average similarity score
+        avg_similarity = sum(r['similarity'] for r in search_results[:3]) / min(len(search_results), 3)
+        
+        # Diversity bonus
+        categories = set(r['category'] for r in search_results[:3])
+        diversity_bonus = min(len(categories) * 0.1, 0.2)
+        
+        return min(avg_similarity + diversity_bonus, 1.0)
+    
+    async def _enhance_response_with_llm(self, rag_response: Dict[str, Any], question: str) -> Dict[str, Any]:
+        """Stage 2: Nâng cao chất lượng response bằng LLM"""
+        try:
+            logger.info(f"🚀 Stage 2: Enhancing response with LLM...")
+            
+            # 1. Chuẩn bị context cho enhancement
+            enhancement_context = self._prepare_enhancement_context(rag_response, question)
+            
+            # 2. Tạo enhancement prompt
+            enhancement_prompt = self._create_enhancement_prompt(rag_response, question)
+            
+            # 3. Gọi LLM để enhance response
+            enhanced_response = await self._call_llm_for_enhancement(enhancement_prompt)
+            
+            # 4. Validate enhanced response
+            validated_response = self._validate_enhanced_response(enhanced_response, rag_response)
+            
+            # 5. Tính confidence mới
+            enhanced_confidence = self._calculate_enhanced_confidence(rag_response, validated_response)
+            
+            return {
+                'original_response': rag_response['raw_response'],
+                'enhanced_response': validated_response,
+                'sources': rag_response['sources'],
+                'confidence': enhanced_confidence,
+                'enhancement_applied': True,
+                'stage': 'llm_enhancement'
+            }
+            
+        except Exception as e:
+            logger.warning(f"LLM enhancement failed: {e}")
+            # Fallback to original response
+            return {
+                'original_response': rag_response['raw_response'],
+                'enhanced_response': rag_response['raw_response'],
+                'sources': rag_response['sources'],
+                'confidence': rag_response['confidence'],
+                'enhancement_applied': False,
+                'stage': 'rag_generation'
+            }
+    
+    def _prepare_enhancement_context(self, rag_response: Dict[str, Any], question: str) -> Dict[str, Any]:
+        """Chuẩn bị context cho enhancement"""
+        return {
+            'original_response': rag_response['raw_response'],
+            'question': question,
+            'sources': rag_response['sources'],
+            'original_confidence': rag_response['confidence'],
+            'response_length': len(rag_response['raw_response']),
+            'sources_count': len(rag_response['sources']),
+            'question_type': self._classify_question_type(question)
+        }
+    
+    def _classify_question_type(self, query: str) -> str:
+        """Phân loại câu hỏi để tối ưu prompt"""
+        query_lower = query.lower()
+        
+        # Keywords cho từng loại
+        definition_keywords = ['là gì', 'what is', 'định nghĩa', 'khái niệm', 'nghĩa là']
+        regulation_keywords = ['luật', 'quy định', 'regulation', 'law', 'điều', 'khoản']
+        standard_keywords = ['iso', 'nist', 'tiêu chuẩn', 'standard', 'chuẩn']
+        attack_keywords = ['tấn công', 'attack', 'hack', 'malware', 'virus', 'exploit']
+        howto_keywords = ['làm thế nào', 'how to', 'cách', 'hướng dẫn', 'thực hiện']
+        
+        if any(keyword in query_lower for keyword in definition_keywords):
+            return 'definition'
+        elif any(keyword in query_lower for keyword in regulation_keywords):
+            return 'regulation'
+        elif any(keyword in query_lower for keyword in standard_keywords):
+            return 'standard'
+        elif any(keyword in query_lower for keyword in attack_keywords):
+            return 'attack'
+        elif any(keyword in query_lower for keyword in howto_keywords):
+            return 'howto'
+        else:
+            return 'general'
+    
+    def _create_enhancement_prompt(self, rag_response: Dict[str, Any], question: str) -> str:
+        """Tạo prompt cho LLM enhancement"""
+        original_response = rag_response['raw_response']
+        sources = rag_response['sources']
+        question_type = self._classify_question_type(question)
+        
+        # System prompt cho enhancement
+        system_prompt = f"""Bạn là chuyên gia cải thiện chất lượng câu trả lời. Nhiệm vụ của bạn là:
+
+1. **Phân tích** câu trả lời hiện tại
+2. **Cải thiện** về mặt ngôn ngữ, cấu trúc và nội dung
+3. **Bổ sung** thông tin từ sources nếu cần
+4. **Đảm bảo** tính chính xác và đầy đủ
+5. **Tối ưu** cho loại câu hỏi: {question_type}
+
+Yêu cầu:
+- Giữ nguyên thông tin chính xác
+- Cải thiện ngôn ngữ tự nhiên hơn
+- Thêm cấu trúc rõ ràng
+- Bổ sung thông tin quan trọng từ sources
+- Độ dài 200-500 từ"""
+
+        # Context từ sources
+        sources_context = ""
+        for i, source in enumerate(sources[:3], 1):
+            sources_context += f"\n=== Nguồn {i}: {source['pdf_name']} ===\n{source['content'][:400]}\n"
+        
+        # User prompt
+        user_prompt = f"""
+        Câu hỏi: {question}
+        
+        Câu trả lời hiện tại:
+        {original_response}
+        
+        Nguồn tài liệu tham khảo:
+        {sources_context}
+        
+        Hãy cải thiện câu trả lời trên để:
+        - Tự nhiên và dễ hiểu hơn
+        - Có cấu trúc rõ ràng
+        - Bổ sung thông tin quan trọng từ sources
+        - Phù hợp với loại câu hỏi {question_type}
+        
+        Câu trả lời cải thiện:
+        """
+        
+        return f"<|im_start|>system\n{system_prompt}\n<|im_end|>\n<|im_start|>user\n{user_prompt}\n<|im_end|>\n<|im_start|>assistant\n"
+    
+    async def _call_llm_for_enhancement(self, enhancement_prompt: str) -> str:
+        """Gọi LLM để enhance response"""
+        try:
+            # Cấu hình tối ưu cho enhancement
+            generation_config = {
+                'temperature': 0.7,  # Balanced creativity
+                'top_p': 0.9,
+                'top_k': 50,
+                'repetition_penalty': 1.15,
+                'max_new_tokens': 400,  # Đủ dài cho enhancement
+                'do_sample': True
+            }
+            
+            # Gọi LLM với prompt enhancement
+            enhanced_response = self.llm_service.generate_response(
+                query=enhancement_prompt,
+                context_docs=None,  # Không cần context docs vì đã có trong prompt
+                max_new_tokens=generation_config['max_new_tokens'],
+                generation_config=generation_config
+            )
+            
+            return enhanced_response
+            
+        except Exception as e:
+            logger.error(f"LLM enhancement call failed: {e}")
+            raise
+    
+    def _validate_enhanced_response(self, enhanced_response: str, rag_response: Dict[str, Any]) -> str:
+        """Validate enhanced response"""
+        original_response = rag_response['raw_response']
+        
+        # 1. Length validation
+        if len(enhanced_response.strip()) < 50:
+            logger.warning("Enhanced response too short, using original")
+            return original_response
+        
+        if len(enhanced_response.strip()) > 1000:
+            logger.warning("Enhanced response too long, truncating")
+            enhanced_response = enhanced_response[:1000] + "..."
+        
+        # 2. Content validation
+        if not self._contains_key_information(enhanced_response, original_response):
+            logger.warning("Enhanced response missing key information, using original")
+            return original_response
+        
+        # 3. Quality validation
+        if self._has_quality_issues(enhanced_response):
+            logger.warning("Enhanced response has quality issues, using original")
+            return original_response
+        
+        return enhanced_response
+    
+    def _contains_key_information(self, enhanced: str, original: str) -> bool:
+        """Kiểm tra enhanced response có chứa thông tin chính từ original"""
+        # Extract key phrases from original
+        original_keywords = self._extract_key_phrases(original)
+        
+        # Check if enhanced contains most key phrases
+        enhanced_lower = enhanced.lower()
+        matches = sum(1 for keyword in original_keywords if keyword.lower() in enhanced_lower)
+        
+        return matches >= len(original_keywords) * 0.7  # 70% match required
+    
+    def _extract_key_phrases(self, text: str) -> List[str]:
+        """Extract key phrases from text"""
+        # Simple key phrase extraction
+        words = text.split()
+        # Filter out common words and get meaningful phrases
+        key_phrases = []
+        for word in words:
+            if len(word) > 3 and word.lower() not in ['của', 'với', 'từ', 'cho', 'được', 'có', 'là', 'và', 'trong', 'theo']:
+                key_phrases.append(word)
+        return key_phrases[:10]  # Top 10 key phrases
+    
+    def _has_quality_issues(self, response: str) -> bool:
+        """Kiểm tra quality issues"""
+        # Check for error indicators
+        error_indicators = ['không thể', 'thử lại', 'lỗi', 'error', 'sorry', 'cannot']
+        if any(indicator in response.lower() for indicator in error_indicators):
+            return True
+        
+        # Check for repetition
+        words = response.split()
+        if len(words) > 10:
+            word_counts = {}
+            for word in words:
+                word_counts[word] = word_counts.get(word, 0) + 1
+            
+            # Check for excessive repetition
+            max_repetition = max(word_counts.values())
+            if max_repetition > len(words) * 0.3:  # 30% repetition threshold
+                return True
+        
+        return False
+    
+    def _calculate_enhanced_confidence(self, rag_response: Dict[str, Any], enhanced_response: str) -> float:
+        """Tính confidence cho enhanced response"""
+        original_confidence = rag_response['confidence']
+        
+        # 1. Base confidence từ original
+        base_confidence = original_confidence
+        
+        # 2. Enhancement quality bonus
+        enhancement_bonus = self._calculate_enhancement_bonus(rag_response['raw_response'], enhanced_response)
+        
+        # 3. Response quality bonus
+        quality_bonus = self._calculate_quality_bonus(enhanced_response)
+        
+        # 4. Source utilization bonus
+        source_bonus = self._calculate_source_utilization_bonus(enhanced_response, rag_response['sources'])
+        
+        # Calculate final confidence
+        final_confidence = base_confidence + enhancement_bonus + quality_bonus + source_bonus
+        
+        return min(max(final_confidence, 0.0), 1.0)
+    
+    def _calculate_enhancement_bonus(self, original: str, enhanced: str) -> float:
+        """Tính bonus cho enhancement quality"""
+        # Length improvement
+        length_ratio = len(enhanced) / max(len(original), 1)
+        if 1.2 <= length_ratio <= 2.0:  # Optimal length increase
+            length_bonus = 0.1
+        elif length_ratio > 2.0:  # Too long
+            length_bonus = -0.05
+        else:  # Too short
+            length_bonus = -0.05
+        
+        # Structure improvement
+        structure_bonus = 0.0
+        if any(marker in enhanced for marker in ['**', '###', '-', '1.', '2.']):
+            structure_bonus = 0.05
+        
+        # Language improvement
+        language_bonus = 0.0
+        if self._has_better_language(enhanced, original):
+            language_bonus = 0.05
+        
+        return length_bonus + structure_bonus + language_bonus
+    
+    def _has_better_language(self, enhanced: str, original: str) -> bool:
+        """Kiểm tra enhanced có ngôn ngữ tốt hơn không"""
+        # Simple check for better language indicators
+        better_indicators = ['dựa trên', 'theo', 'cụ thể', 'chi tiết', 'ví dụ']
+        return any(indicator in enhanced.lower() for indicator in better_indicators)
+    
+    def _calculate_quality_bonus(self, response: str) -> float:
+        """Tính bonus cho response quality"""
+        quality_bonus = 0.0
+        
+        # Completeness
+        if len(response) >= 200:
+            quality_bonus += 0.05
+        
+        # Structure
+        if any(marker in response for marker in ['**', '###', '-', '1.', '2.']):
+            quality_bonus += 0.05
+        
+        # Professional language
+        if self._has_professional_language(response):
+            quality_bonus += 0.05
+        
+        return quality_bonus
+    
+    def _has_professional_language(self, response: str) -> bool:
+        """Kiểm tra ngôn ngữ chuyên nghiệp"""
+        professional_indicators = ['theo quy định', 'căn cứ', 'dựa trên', 'theo tiêu chuẩn']
+        return any(indicator in response.lower() for indicator in professional_indicators)
+    
+    def _calculate_source_utilization_bonus(self, response: str, sources: List[Dict]) -> float:
+        """Tính bonus cho việc sử dụng sources"""
+        if not sources:
+            return 0.0
+        
+        # Check if response mentions source information
+        source_mentions = 0
+        for source in sources[:3]:
+            filename = source['pdf_name']
+            if any(word in response.lower() for word in filename.lower().split()):
+                source_mentions += 1
+        
+        return min(source_mentions * 0.05, 0.15)  # Max 0.15 bonus
+
     def _generate_llm_answer(self, question: str, search_results: List[Dict]) -> Dict[str, Any]:
-        """Tạo câu trả lời sử dụng LLM với RAG context"""
+        """Tạo câu trả lời sử dụng LLM với RAG context (Legacy method - kept for compatibility)"""
         try:
             logger.info(f"🤖 Attempting LLM generation for: {question[:50]}...")
             
@@ -640,8 +1036,9 @@ class RAGServiceUnified:
                    top_k: Optional[int] = None,
                    filter_category: Optional[str] = None,
                    include_sources: bool = True,
-                   similarity_threshold: Optional[float] = None) -> Dict[str, Any]:
-        """API chính để xử lý query và trả về response"""
+                   similarity_threshold: Optional[float] = None,
+                   use_enhancement: bool = True) -> Dict[str, Any]:
+        """API chính để xử lý query với pipeline 2-stage: RAG → LLM Enhancement"""
         try:
             start_time = time.time()
             
@@ -653,7 +1050,7 @@ class RAGServiceUnified:
                 raise ValueError("Question không được để trống")
             
             question = question.strip()
-            logger.info(f"🔍 Processing query: {question[:100]}...")
+            logger.info(f"🔍 Processing query with 2-stage pipeline: {question[:100]}...")
             
             # 1. Search relevant chunks
             search_results = self.search_relevant_chunks(
@@ -663,17 +1060,40 @@ class RAGServiceUnified:
                 similarity_threshold=similarity_threshold
             )
             
-            # 2. Generate comprehensive answer
-            answer_data = self.generate_comprehensive_answer(
-                question=question,
-                search_results=search_results,
-                include_sources=include_sources
-            )
+            if not search_results:
+                return self._create_empty_response(question)
             
-            # 3. Prepare sources information
+            # 2. Stage 1: Generate RAG response
+            rag_response = await self._generate_rag_response(question, search_results)
+            
+            # 3. Stage 2: LLM Enhancement (if enabled)
+            if use_enhancement and self.llm_service:
+                try:
+                    final_response = await self._enhance_response_with_llm(rag_response, question)
+                except Exception as e:
+                    logger.warning(f"Enhancement failed: {e}, using RAG response")
+                    final_response = {
+                        'original_response': rag_response['raw_response'],
+                        'enhanced_response': rag_response['raw_response'],
+                        'sources': rag_response['sources'],
+                        'confidence': rag_response['confidence'],
+                        'enhancement_applied': False,
+                        'stage': 'rag_generation'
+                    }
+            else:
+                final_response = {
+                    'original_response': rag_response['raw_response'],
+                    'enhanced_response': rag_response['raw_response'],
+                    'sources': rag_response['sources'],
+                    'confidence': rag_response['confidence'],
+                    'enhancement_applied': False,
+                    'stage': 'rag_generation'
+                }
+            
+            # 4. Prepare sources information
             sources = []
-            if include_sources and search_results:
-                for result in search_results:
+            if include_sources and final_response['sources']:
+                for result in final_response['sources']:
                     sources.append({
                         'filename': result['pdf_name'],
                         'display_name': self._clean_filename(result['pdf_name']),
@@ -683,24 +1103,26 @@ class RAGServiceUnified:
                         'content_length': result['content_length']
                     })
             
-            # 4. Calculate processing time
+            # 5. Calculate processing time
             processing_time = int((time.time() - start_time) * 1000)
             
-            # 5. Prepare final response
+            # 6. Prepare final response
             response = {
                 'question': question,
-                'answer': answer_data['answer'],
+                'answer': final_response['enhanced_response'],
                 'sources': sources,
                 'total_sources': len(sources),
-                'confidence': answer_data.get('confidence', 0.0),
-                'method': answer_data.get('method', 'unified'),
+                'confidence': final_response['confidence'],
+                'method': 'rag_llm_enhancement' if final_response['enhancement_applied'] else 'rag_generation',
                 'processing_time_ms': processing_time,
                 'filter_category': filter_category or 'all',
                 'timestamp': datetime.now().isoformat(),
-                'service_version': '1.0.0'
+                'service_version': '2.0.0',
+                'enhancement_applied': final_response['enhancement_applied'],
+                'original_response': final_response['original_response'] if final_response['enhancement_applied'] else None
             }
             
-            logger.info(f"✅ Query processed successfully: {len(sources)} sources, {processing_time}ms")
+            logger.info(f"✅ Query processed successfully: {len(sources)} sources, {processing_time}ms, enhancement: {final_response['enhancement_applied']}")
             return response
             
         except Exception as e:
@@ -715,6 +1137,22 @@ class RAGServiceUnified:
                 'processing_time_ms': 0,
                 'error': str(e)
             }
+    
+    def _create_empty_response(self, question: str) -> Dict[str, Any]:
+        """Tạo response khi không có kết quả tìm kiếm"""
+        return {
+            'question': question,
+            'answer': "Xin lỗi, tôi không tìm thấy thông tin liên quan đến câu hỏi của bạn trong cơ sở dữ liệu.",
+            'sources': [],
+            'total_sources': 0,
+            'confidence': 0.0,
+            'method': 'no_results',
+            'processing_time_ms': 0,
+            'filter_category': 'all',
+            'timestamp': datetime.now().isoformat(),
+            'service_version': '2.0.0',
+            'enhancement_applied': False
+        }
     
     async def get_service_stats(self) -> Dict[str, Any]:
         """Lấy thống kê service"""

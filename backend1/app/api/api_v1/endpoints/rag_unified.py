@@ -22,6 +22,7 @@ class UnifiedQueryRequest(BaseModel):
     filter_category: Optional[str] = Field(default=None, description="Lọc theo danh mục: 'luat', 'english', 'vietnamese', 'all'")
     include_sources: Optional[bool] = Field(default=True, description="Có bao gồm thông tin nguồn tài liệu không")
     similarity_threshold: Optional[float] = Field(default=None, description="Ngưỡng độ tương đồng tối thiểu", ge=0.0, le=1.0)
+    use_enhancement: Optional[bool] = Field(default=True, description="Sử dụng LLM enhancement để nâng cao chất lượng response")
 
 class SourceInfo(BaseModel):
     """Thông tin nguồn tài liệu"""
@@ -44,6 +45,8 @@ class UnifiedQueryResponse(BaseModel):
     filter_category: str
     timestamp: str
     service_version: str
+    enhancement_applied: Optional[bool] = Field(default=False, description="Có áp dụng LLM enhancement không")
+    original_response: Optional[str] = Field(default=None, description="Response gốc trước khi enhancement")
 
 class ServiceStats(BaseModel):
     """Thống kê service"""
@@ -95,7 +98,8 @@ async def unified_query(request: UnifiedQueryRequest):
             top_k=request.top_k,
             filter_category=request.filter_category,
             include_sources=request.include_sources,
-            similarity_threshold=request.similarity_threshold
+            similarity_threshold=request.similarity_threshold,
+            use_enhancement=request.use_enhancement
         )
         
         # Convert to response model
@@ -111,7 +115,9 @@ async def unified_query(request: UnifiedQueryRequest):
             processing_time_ms=result.get('processing_time_ms', 0),
             filter_category=result.get('filter_category', 'all'),
             timestamp=result.get('timestamp', ''),
-            service_version=result.get('service_version', '1.0.0')
+            service_version=result.get('service_version', '2.0.0'),
+            enhancement_applied=result.get('enhancement_applied', False),
+            original_response=result.get('original_response', None)
         )
         
         logger.info(f"✅ Query processed: {response.total_sources} sources, {response.processing_time_ms}ms")
