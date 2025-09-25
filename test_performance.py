@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Performance Testing Script cho Hệ thống Trợ lý Ảo An toàn Thông tin
-Đánh giá hiệu suất của API RAG qua các metric: thời gian phản hồi chi tiết, sử dụng tài nguyên
-Theo yêu cầu 4.3.3.1 và 4.3.3.2
+Performance Testing Script cho He thong Tro ly Ảo An toan Thong tin
+Danh gia hieu suat cua API RAG qua cac metric: thoi gian phan hoi chi tiet, su dung tai nguyen
+Theo yeu cau 4.3.3.1 va 4.3.3.2
 """
 
 import asyncio
@@ -18,39 +18,39 @@ from typing import List, Dict, Any, Tuple
 import logging
 import csv
 
-# Cấu hình logging
+# Cau hinh logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('performance_test_results.log'),
+        logging.FileHandler('performance_test_results.log', encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
 
 class ResourceMonitor:
-    """Monitor tài nguyên hệ thống"""
+    """Monitor tai nguyen he thong"""
     def __init__(self):
         self.monitoring = False
         self.data = []
         self.lock = threading.Lock()
         
     def start_monitoring(self):
-        """Bắt đầu monitor tài nguyên"""
+        """Bat dau monitor tai nguyen"""
         self.monitoring = True
         self.data = []
         self.monitor_thread = threading.Thread(target=self._monitor_loop)
         self.monitor_thread.start()
         
     def stop_monitoring(self):
-        """Dừng monitor tài nguyên"""
+        """Dung monitor tai nguyen"""
         self.monitoring = False
         if hasattr(self, 'monitor_thread'):
             self.monitor_thread.join()
     
     def _monitor_loop(self):
-        """Vòng lặp monitor tài nguyên"""
+        """Vong lap monitor tai nguyen"""
         while self.monitoring:
             try:
                 # CPU usage
@@ -61,7 +61,7 @@ class ResourceMonitor:
                 ram_percent = memory.percent
                 ram_used_gb = memory.used / (1024**3)
                 
-                # GPU usage (nếu có)
+                # GPU usage (neu co)
                 gpu_percent = 0
                 gpu_memory_percent = 0
                 gpu_memory_used_gb = 0
@@ -69,12 +69,12 @@ class ResourceMonitor:
                 try:
                     gpus = GPUtil.getGPUs()
                     if gpus:
-                        gpu = gpus[0]  # Lấy GPU đầu tiên
+                        gpu = gpus[0]  # Lay GPU dau tien
                         gpu_percent = gpu.load * 100
                         gpu_memory_percent = gpu.memoryUtil * 100
                         gpu_memory_used_gb = (gpu.memoryUsed / 1024)
                 except:
-                    pass  # Không có GPU hoặc lỗi
+                    pass  # Khong co GPU hoac loi
                 
                 with self.lock:
                     self.data.append({
@@ -87,14 +87,14 @@ class ResourceMonitor:
                         'gpu_memory_used_gb': gpu_memory_used_gb
                     })
                 
-                time.sleep(0.5)  # Monitor mỗi 0.5 giây
+                time.sleep(0.5)  # Monitor moi 0.5 giay
                 
             except Exception as e:
-                logging.error(f"Lỗi monitor tài nguyên: {e}")
+                logging.error(f"Loi monitor tai nguyen: {e}")
                 break
     
     def get_stats(self) -> Dict[str, Any]:
-        """Lấy thống kê tài nguyên"""
+        """Lay thong ke tai nguyen"""
         with self.lock:
             if not self.data:
                 return {}
@@ -133,24 +133,24 @@ class PerformanceTester:
         self.session = None
         self.resource_monitor = ResourceMonitor()
         
-        # Tạo 100 câu hỏi mẫu với độ dài khác nhau (theo yêu cầu 4.3.3.1)
+        # Tao 100 cau hoi mau voi do dai khac nhau (theo yeu cau 4.3.3.1)
         self.test_questions = self._generate_100_test_questions()
     
     def _generate_100_test_questions(self) -> List[str]:
-        """Tạo 100 câu hỏi mẫu với độ dài khác nhau"""
-        # Tạo 100 câu hỏi đa dạng về an toàn thông tin
+        """Tao 100 cau hoi mau voi do dai khac nhau"""
+        # Tao 100 cau hoi da dang ve an toan thong tin
         questions = [
-            # Câu hỏi cơ bản (1-20)
-            "An toàn thông tin là gì?",
-            "Mật khẩu mạnh có đặc điểm gì?",
-            "Firewall là gì?",
-            "Malware là gì?",
-            "VPN là gì?",
-            "Phishing là gì?",
-            "Ransomware là gì?",
-            "IDS là gì?",
-            "SIEM là gì?",
-            "Zero Trust là gì?",
+            # Cau hoi co ban (1-20)
+            "An toan thong tin la gi?",
+            "Mat khau manh co dac diem gi?",
+            "Firewall la gi?",
+            "Malware la gi?",
+            "VPN la gi?",
+            "Phishing la gi?",
+            "Ransomware la gi?",
+            "IDS la gi?",
+            "SIEM la gi?",
+            "Zero Trust la gi?",
             "What is information security?",
             "What is cybersecurity?",
             "What is data encryption?",
@@ -162,61 +162,61 @@ class PerformanceTester:
             "What is risk management?",
             "What is compliance?",
             
-            # Câu hỏi về luật pháp Việt Nam (21-40)
-            "Luật An toàn thông tin số 86/2015/QH13 quy định gì?",
-            "Nghị định 53/2022/NĐ-CP về an toàn thông tin có nội dung gì?",
-            "Các quyền và nghĩa vụ của cơ quan, tổ chức trong an toàn thông tin?",
-            "Quy định về báo cáo sự cố an toàn thông tin theo luật Việt Nam?",
-            "Xử phạt vi phạm an toàn thông tin theo luật hiện hành như thế nào?",
-            "Thông tư 20/2017/TT-BTTTT quy định gì về an toàn thông tin?",
-            "Quy định về phân loại thông tin mật theo luật Việt Nam?",
-            "Nghị định 142/2016/NĐ-CP về an toàn thông tin có nội dung gì?",
-            "Quy định về đánh giá rủi ro an toàn thông tin theo pháp luật?",
-            "Quy định về chứng nhận an toàn thông tin tại Việt Nam?",
-            "Luật Mạng lưới thông tin quốc gia có quy định gì về an toàn?",
-            "Quy định về bảo vệ dữ liệu cá nhân theo luật Việt Nam?",
-            "Quy định về giám sát an toàn thông tin trong cơ quan nhà nước?",
-            "Quy định về đào tạo nhận thức an toàn thông tin cho cán bộ?",
-            "Quy định về ứng phó sự cố an toàn thông tin theo quy trình?",
-            "Quyết định 1118/QĐ-BTTTT về tiêu chuẩn kỹ thuật an toàn thông tin?",
-            "Quyết định 1603/QĐ-BHXH về quy trình ứng phó sự cố an toàn thông tin?",
-            "Quyết định 1760/QĐ-BKHCN về tiêu chuẩn kỹ thuật hệ thống thông tin?",
-            "Thông tư 12/2019/TT-BTTTT về an toàn thông tin trong hệ thống?",
-            "Thông tư 12/2022/TT-BTTTT về quy định an toàn thông tin mới nhất?",
+            # Cau hoi ve luat phap Viet Nam (21-40)
+            "Luat An toan thong tin so 86/2015/QH13 quy dinh gi?",
+            "Nghi dinh 53/2022/ND-CP ve an toan thong tin co noi dung gi?",
+            "Cac quyen va nghia vu cua co quan, to chuc trong an toan thong tin?",
+            "Quy dinh ve bao cao su co an toan thong tin theo luat Viet Nam?",
+            "Xu phat vi pham an toan thong tin theo luat hien hanh nhu the nao?",
+            "Thong tu 20/2017/TT-BTTTT quy dinh gi ve an toan thong tin?",
+            "Quy dinh ve phan loai thong tin mat theo luat Viet Nam?",
+            "Nghi dinh 142/2016/ND-CP ve an toan thong tin co noi dung gi?",
+            "Quy dinh ve danh gia rui ro an toan thong tin theo phap luat?",
+            "Quy dinh ve chung nhan an toan thong tin tai Viet Nam?",
+            "Luat Mang luoi thong tin quoc gia co quy dinh gi ve an toan?",
+            "Quy dinh ve bao ve du lieu ca nhan theo luat Viet Nam?",
+            "Quy dinh ve giam sat an toan thong tin trong co quan nha nuoc?",
+            "Quy dinh ve dao tao nhan thuc an toan thong tin cho can bo?",
+            "Quy dinh ve ung pho su co an toan thong tin theo quy trinh?",
+            "Quyet dinh 1118/QD-BTTTT ve tieu chuan ky thuat an toan thong tin?",
+            "Quyet dinh 1603/QD-BHXH ve quy trinh ung pho su co an toan thong tin?",
+            "Quyet dinh 1760/QD-BKHCN ve tieu chuan ky thuat he thong thong tin?",
+            "Thong tu 12/2019/TT-BTTTT ve an toan thong tin trong he thong?",
+            "Thong tu 12/2022/TT-BTTTT ve quy dinh an toan thong tin moi nhat?",
             
-            # Câu hỏi về tiêu chuẩn quốc tế (41-60)
-            "ISO 27001 có những yêu cầu nào về quản lý an toàn thông tin?",
+            # Cau hoi ve tieu chuan quoc te (41-60)
+            "ISO 27001 co nhung yeu cau nao ve quan ly an toan thong tin?",
             "What are the core functions of NIST Framework?",
-            "ISO 27002 có những biện pháp bảo mật nào?",
+            "ISO 27002 co nhung bien phap bao mat nao?",
             "What is COBIT framework in information security?",
-            "PCI DSS có những yêu cầu gì về bảo mật thanh toán?",
-            "GDPR có những nguyên tắc nào về bảo vệ dữ liệu cá nhân?",
+            "PCI DSS co nhung yeu cau gi ve bao mat thanh toan?",
+            "GDPR co nhung nguyen tac nao ve bao ve du lieu ca nhan?",
             "What is OWASP Top 10 vulnerabilities?",
-            "ISO 22301 về quản lý khủng hoảng có nội dung gì?",
+            "ISO 22301 ve quan ly khung hoang co noi dung gi?",
             "What is SOC 2 compliance requirements?",
-            "ITIL có những quy trình nào về an toàn thông tin?",
-            "ISO 31000 về quản lý rủi ro có nội dung gì?",
+            "ITIL co nhung quy trinh nao ve an toan thong tin?",
+            "ISO 31000 ve quan ly rui ro co noi dung gi?",
             "What are the key principles of CIS Controls?",
-            "ISO 27035 về quản lý sự cố an toàn thông tin có gì?",
+            "ISO 27035 ve quan ly su co an toan thong tin co gi?",
             "What is the difference between ISO 27001 and ISO 27002?",
-            "ISO 27017 về an toàn đám mây có nội dung gì?",
+            "ISO 27017 ve an toan dam may co noi dung gi?",
             "What are the requirements of ISO 27018 for cloud privacy?",
-            "ISO 27019 về an toàn thông tin trong ngành năng lượng?",
+            "ISO 27019 ve an toan thong tin trong nganh nang luong?",
             "What is the purpose of ISO 27031 in business continuity?",
-            "ISO 27032 về cybersecurity có những gì?",
+            "ISO 27032 ve cybersecurity co nhung gi?",
             "What are the key elements of ISO 27033 network security?",
             
-            # Câu hỏi kỹ thuật phức tạp (61-80)
-            "Phân biệt giữa mã hóa đối xứng và mã hóa bất đối xứng?",
-            "Quy trình xử lý sự cố an toàn thông tin bao gồm những bước nào?",
+            # Cau hoi ky thuat phuc tap (61-80)
+            "Phan biet giua ma hoa doi xung va ma hoa bat doi xung?",
+            "Quy trinh xu ly su co an toan thong tin bao gom nhung buoc nao?",
             "How does blockchain technology enhance security?",
-            "Zero Trust Architecture hoạt động như thế nào?",
-            "Machine Learning trong phát hiện mối đe dọa an toàn thông tin?",
+            "Zero Trust Architecture hoat dong nhu the nao?",
+            "Machine Learning trong phat hien moi de doa an toan thong tin?",
             "What is the difference between IDS and IPS systems?",
-            "Quản lý khóa mật mã trong hệ thống lớn như thế nào?",
-            "Container security có những thách thức gì?",
+            "Quan ly khoa mat ma trong he thong lon nhu the nao?",
+            "Container security co nhung thach thuc gi?",
             "How to implement secure coding practices in development?",
-            "Đánh giá rủi ro an toàn thông tin sử dụng phương pháp nào?",
+            "Danh gia rui ro an toan thong tin su dung phuong phap nao?",
             "What is the role of AI in cybersecurity threat detection?",
             "How to secure microservices architecture?",
             "What are the security challenges in IoT systems?",
@@ -228,15 +228,15 @@ class PerformanceTester:
             "What is the role of quantum cryptography in future security?",
             "How to secure 5G networks and infrastructure?",
             
-            # Câu hỏi về các chủ đề chuyên sâu (81-100)
-            "So sánh hiệu quả giữa AES-256 và ChaCha20-Poly1305 trong mã hóa?",
-            "Quy trình đào tạo nhận thức an toàn thông tin cho nhân viên?",
-            "Các biện pháp bảo mật cho hệ thống mạng nội bộ và công cộng?",
-            "Phân tích ưu nhược điểm của việc sử dụng AI trong phát hiện mối đe dọa?",
-            "Xây dựng chính sách an toàn thông tin cần những thành phần gì?",
-            "Triển khai Zero Trust Architecture trong môi trường hybrid cloud?",
-            "Các quyền và nghĩa vụ của cơ quan, tổ chức trong an toàn thông tin?",
-            "Đánh giá rủi ro an toàn thông tin như thế nào và cần những yếu tố gì?",
+            # Cau hoi ve cac chu de chuyen sau (81-100)
+            "So sanh hieu qua giua AES-256 va ChaCha20-Poly1305 trong ma hoa?",
+            "Quy trinh dao tao nhan thuc an toan thong tin cho nhan vien?",
+            "Cac bien phap bao mat cho he thong mang noi bo va cong cong?",
+            "Phan tich uu nhuoc diem cua viec su dung AI trong phat hien moi de doa?",
+            "Xay dung chinh sach an toan thong tin can nhung thanh phan gi?",
+            "Trien khai Zero Trust Architecture trong moi truong hybrid cloud?",
+            "Cac quyen va nghia vu cua co quan, to chuc trong an toan thong tin?",
+            "Danh gia rui ro an toan thong tin nhu the nao va can nhung yeu to gi?",
             "What are the emerging threats in cybersecurity for 2024?",
             "How to implement security orchestration and automated response?",
             "What is the role of threat intelligence in cybersecurity?",
@@ -251,7 +251,7 @@ class PerformanceTester:
             "How to conduct comprehensive security risk assessments?"
         ]
         
-        # Đảm bảo có đúng 100 câu hỏi
+        # Dam bao co dung 100 cau hoi
         return questions[:100]
     
     async def __aenter__(self):
@@ -263,7 +263,7 @@ class PerformanceTester:
             await self.session.close()
     
     async def detailed_response_time_test(self, question: str) -> Dict[str, Any]:
-        """Test thời gian phản hồi chi tiết cho từng thành phần (4.3.3.1)"""
+        """Test thoi gian phan hoi chi tiet cho tung thanh phan (4.3.3.1)"""
         payload = {
             "question": question,
             "top_k": 5,
@@ -271,7 +271,7 @@ class PerformanceTester:
             "use_enhancement": True
         }
         
-        # Bắt đầu monitor tài nguyên
+        # Bat dau monitor tai nguyen
         self.resource_monitor.start_monitoring()
         
         start_time = time.time()
@@ -280,14 +280,14 @@ class PerformanceTester:
                 total_response_time = (time.time() - start_time) * 1000  # ms
                 response_data = await response.json()
                 
-                # Dừng monitor tài nguyên
+                # Dung monitor tai nguyen
                 self.resource_monitor.stop_monitoring()
                 resource_stats = self.resource_monitor.get_stats()
                 
-                # Phân tích thời gian từng thành phần (dựa trên response data)
+                # Phan tich thoi gian tung thanh phan (dua tren response data)
                 processing_time_ms = response_data.get("processing_time_ms", 0)
                 
-                # Ước tính thời gian từng thành phần (dựa trên tỷ lệ thông thường)
+                # Ưoc tinh thoi gian tung thanh phan (dua tren ty le thong thuong)
                 embedding_time = processing_time_ms * 0.15  # 15% cho embedding
                 vector_search_time = processing_time_ms * 0.25  # 25% cho vector search
                 context_retrieval_time = processing_time_ms * 0.20  # 20% cho context retrieval
@@ -299,7 +299,7 @@ class PerformanceTester:
                     "status_code": response.status,
                     "success": response.status == 200,
                     
-                    # Thời gian từng thành phần (theo yêu cầu 4.3.3.1)
+                    # Thoi gian tung thanh phan (theo yeu cau 4.3.3.1)
                     "embedding_query_time_ms": embedding_time,
                     "vector_search_time_ms": vector_search_time,
                     "context_retrieval_time_ms": context_retrieval_time,
@@ -307,12 +307,12 @@ class PerformanceTester:
                     "total_processing_time_ms": processing_time_ms,
                     "total_response_time_ms": total_response_time,
                     
-                    # Thông tin response
+                    # Thong tin response
                     "answer_length": len(response_data.get("answer", "")),
                     "sources_count": response_data.get("total_sources", 0),
                     "confidence": response_data.get("confidence", 0),
                     
-                    # Tài nguyên sử dụng
+                    # Tai nguyen su dung
                     "resource_usage": resource_stats
                 }
         except Exception as e:
@@ -329,25 +329,25 @@ class PerformanceTester:
             }
     
     async def run_100_questions_response_time_test(self) -> Dict[str, Any]:
-        """Thực hiện thử nghiệm 100 câu hỏi mẫu với độ dài khác nhau (4.3.3.1)"""
-        logger.info("🧪 Bắt đầu thử nghiệm thời gian phản hồi với 100 câu hỏi...")
+        """Thuc hien thu nghiem 100 cau hoi mau voi do dai khac nhau (4.3.3.1)"""
+        logger.info("[TEST] Bat dau thu nghiem thoi gian phan hoi voi 100 cau hoi...")
         
         all_results = []
         successful_results = []
         
-        # Test từng câu hỏi
+        # Test tung cau hoi
         for i, question in enumerate(self.test_questions, 1):
-            logger.info(f"Test câu hỏi {i}/100: {question[:50]}...")
+            logger.info(f"Test cau hoi {i}/100: {question[:50]}...")
             result = await self.detailed_response_time_test(question)
             all_results.append(result)
             
             if result.get("success", False):
                 successful_results.append(result)
             
-            # Nghỉ ngắn giữa các requests để tránh quá tải
+            # Nghi ngan giua cac requests de tranh qua tai
             await asyncio.sleep(0.1)
         
-        # Tính toán thống kê thời gian từng thành phần
+        # Tinh toan thong ke thoi gian tung thanh phan
         if successful_results:
             stats = self._calculate_detailed_timing_stats(successful_results)
             return {
@@ -364,12 +364,12 @@ class PerformanceTester:
                 "successful_questions": 0,
                 "failed_questions": len(all_results),
                 "success_rate": 0,
-                "error": "Không có câu hỏi nào thành công"
+                "error": "Khong co cau hoi nao thanh cong"
             }
     
     def _calculate_detailed_timing_stats(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Tính toán thống kê thời gian chi tiết cho từng thành phần"""
-        # Lấy dữ liệu thời gian từng thành phần
+        """Tinh toan thong ke thoi gian chi tiet cho tung thanh phan"""
+        # Lay du lieu thoi gian tung thanh phan
         embedding_times = [r["embedding_query_time_ms"] for r in results]
         vector_search_times = [r["vector_search_time_ms"] for r in results]
         context_retrieval_times = [r["context_retrieval_time_ms"] for r in results]
@@ -397,24 +397,24 @@ class PerformanceTester:
         }
     
     async def resource_usage_test(self) -> Dict[str, Any]:
-        """Thử nghiệm sử dụng tài nguyên (4.3.3.2)"""
-        logger.info("🧪 Bắt đầu thử nghiệm sử dụng tài nguyên...")
+        """Thu nghiem su dung tai nguyen (4.3.3.2)"""
+        logger.info("[TEST] Bat dau thu nghiem su dung tai nguyen...")
         
-        # Test với 10 câu hỏi để đánh giá tài nguyên
+        # Test voi 10 cau hoi de danh gia tai nguyen
         test_questions = self.test_questions[:10]
         all_resource_data = []
         
         for i, question in enumerate(test_questions, 1):
-            logger.info(f"Test tài nguyên câu hỏi {i}/10...")
+            logger.info(f"Test tai nguyen cau hoi {i}/10...")
             result = await self.detailed_response_time_test(question)
             
             if result.get("success", False) and result.get("resource_usage"):
                 all_resource_data.append(result["resource_usage"])
             
-            await asyncio.sleep(1)  # Nghỉ 1 giây giữa các test
+            await asyncio.sleep(1)  # Nghi 1 giay giua cac test
         
         if all_resource_data:
-            # Tính toán thống kê tài nguyên tổng hợp
+            # Tinh toan thong ke tai nguyen tong hop
             resource_stats = self._calculate_resource_stats(all_resource_data)
             return {
                 "test_questions": len(test_questions),
@@ -425,12 +425,12 @@ class PerformanceTester:
             return {
                 "test_questions": len(test_questions),
                 "successful_tests": 0,
-                "error": "Không có dữ liệu tài nguyên nào được thu thập"
+                "error": "Khong co du lieu tai nguyen nao duoc thu thap"
             }
     
     def _calculate_resource_stats(self, resource_data: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Tính toán thống kê sử dụng tài nguyên"""
-        # Tính toán thống kê cho CPU, RAM, GPU
+        """Tinh toan thong ke su dung tai nguyen"""
+        # Tinh toan thong ke cho CPU, RAM, GPU
         cpu_avg_values = [d.get("cpu", {}).get("avg", 0) for d in resource_data]
         cpu_max_values = [d.get("cpu", {}).get("max", 0) for d in resource_data]
         
@@ -463,43 +463,43 @@ class PerformanceTester:
         }
     
     async def load_test(self, duration_seconds: int = 60, requests_per_second: int = 5) -> List[Dict[str, Any]]:
-        """Load test trong khoảng thời gian nhất định"""
-        logger.info(f"🚀 Bắt đầu load test: {duration_seconds}s với {requests_per_second} req/s...")
+        """Load test trong khoang thoi gian nhat dinh"""
+        logger.info(f"🚀 Bat dau load test: {duration_seconds}s voi {requests_per_second} req/s...")
         
         all_results = []
         start_time = time.time()
         request_interval = 1.0 / requests_per_second
         
         while (time.time() - start_time) < duration_seconds:
-            # Chọn câu hỏi ngẫu nhiên
+            # Chon cau hoi ngau nhien
             import random
             question = random.choice(self.test_questions)
             
             result = await self.single_request_test(question)
             all_results.append(result)
             
-            # Đợi theo interval
+            # Doi theo interval
             await asyncio.sleep(request_interval)
         
         return all_results
     
     async def stress_test(self, max_concurrent: int = 50) -> List[Dict[str, Any]]:
-        """Stress test với số lượng concurrent tăng dần"""
-        logger.info(f"💥 Bắt đầu stress test với tối đa {max_concurrent} concurrent requests...")
+        """Stress test voi so luong concurrent tang dan"""
+        logger.info(f"💥 Bat dau stress test voi toi da {max_concurrent} concurrent requests...")
         
         all_results = []
         for concurrent in [5, 10, 20, 30, 40, max_concurrent]:
-            logger.info(f"Testing với {concurrent} concurrent requests...")
+            logger.info(f"Testing voi {concurrent} concurrent requests...")
             results = await self.concurrent_requests_test(concurrent)
             all_results.extend(results)
             
-            # Nghỉ giữa các đợt test
+            # Nghi giua cac dot test
             await asyncio.sleep(2)
         
         return all_results
     
     def calculate_performance_metrics(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Tính toán các metric hiệu suất"""
+        """Tinh toan cac metric hieu suat"""
         if not results:
             return {}
         
@@ -507,7 +507,7 @@ class PerformanceTester:
         failed_results = [r for r in results if not r.get("success", False)]
         
         if not successful_results:
-            return {"error": "Không có request nào thành công"}
+            return {"error": "Khong co request nao thanh cong"}
         
         response_times = [r["response_time_ms"] for r in successful_results]
         processing_times = [r.get("processing_time_ms", 0) for r in successful_results]
@@ -548,13 +548,13 @@ class PerformanceTester:
     
     @staticmethod
     def percentile(data: List[float], percentile: int) -> float:
-        """Tính percentile"""
+        """Tinh percentile"""
         sorted_data = sorted(data)
         index = int(len(sorted_data) * percentile / 100)
         return sorted_data[min(index, len(sorted_data) - 1)]
     
     def save_response_time_results(self, results: Dict[str, Any]):
-        """Lưu kết quả thử nghiệm thời gian phản hồi (4.3.3.1)"""
+        """Luu ket qua thu nghiem thoi gian phan hoi (4.3.3.1)"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"response_time_test_{timestamp}.json"
         
@@ -567,16 +567,16 @@ class PerformanceTester:
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(output, f, ensure_ascii=False, indent=2)
         
-        # Tạo CSV cho bảng kết quả theo yêu cầu
+        # Tao CSV cho bang ket qua theo yeu cau
         csv_filename = f"response_time_table_{timestamp}.csv"
         self._create_response_time_table_csv(results, csv_filename)
         
-        logger.info(f"📊 Kết quả thử nghiệm thời gian phản hồi đã được lưu: {filename}")
-        logger.info(f"📊 Bảng kết quả CSV đã được lưu: {csv_filename}")
+        logger.info(f"[RESULT] Ket qua thu nghiem thoi gian phan hoi da duoc luu: {filename}")
+        logger.info(f"[RESULT] Bang ket qua CSV da duoc luu: {csv_filename}")
         return filename, csv_filename
     
     def save_resource_usage_results(self, results: Dict[str, Any]):
-        """Lưu kết quả thử nghiệm sử dụng tài nguyên (4.3.3.2)"""
+        """Luu ket qua thu nghiem su dung tai nguyen (4.3.3.2)"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"resource_usage_test_{timestamp}.json"
         
@@ -589,26 +589,26 @@ class PerformanceTester:
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(output, f, ensure_ascii=False, indent=2)
         
-        # Tạo CSV cho bảng kết quả theo yêu cầu
+        # Tao CSV cho bang ket qua theo yeu cau
         csv_filename = f"resource_usage_table_{timestamp}.csv"
         self._create_resource_usage_table_csv(results, csv_filename)
         
-        logger.info(f"📊 Kết quả thử nghiệm sử dụng tài nguyên đã được lưu: {filename}")
-        logger.info(f"📊 Bảng kết quả CSV đã được lưu: {csv_filename}")
+        logger.info(f"[RESULT] Ket qua thu nghiem su dung tai nguyen da duoc luu: {filename}")
+        logger.info(f"[RESULT] Bang ket qua CSV da duoc luu: {csv_filename}")
         return filename, csv_filename
     
     def _create_response_time_table_csv(self, results: Dict[str, Any], filename: str):
-        """Tạo bảng CSV cho kết quả thời gian phản hồi"""
+        """Tao bang CSV cho ket qua thoi gian phan hoi"""
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
             # Header
-            writer.writerow(['Thành phần', 'Thời gian trung bình (s)', 'Thời gian tối thiểu (s)', 'Thời gian tối đa (s)'])
+            writer.writerow(['Thanh phan', 'Thoi gian trung binh (s)', 'Thoi gian toi thieu (s)', 'Thoi gian toi da (s)'])
             
             if 'detailed_timing_stats' in results:
                 stats = results['detailed_timing_stats']
                 
-                # Chuyển đổi từ ms sang giây
+                # Chuyen doi tu ms sang giay
                 writer.writerow([
                     'Embedding Query',
                     f"{stats['embedding_query']['avg']/1000:.3f}",
@@ -638,19 +638,19 @@ class PerformanceTester:
                 ])
                 
                 writer.writerow([
-                    'Tổng thời gian',
+                    'Tong thoi gian',
                     f"{stats['total_processing']['avg']/1000:.3f}",
                     f"{stats['total_processing']['min']/1000:.3f}",
                     f"{stats['total_processing']['max']/1000:.3f}"
                 ])
     
     def _create_resource_usage_table_csv(self, results: Dict[str, Any], filename: str):
-        """Tạo bảng CSV cho kết quả sử dụng tài nguyên"""
+        """Tao bang CSV cho ket qua su dung tai nguyen"""
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
             # Header
-            writer.writerow(['Tài nguyên', 'Sử dụng trung bình', 'Sử dụng tối đa', 'Ghi chú'])
+            writer.writerow(['Tai nguyen', 'Su dung trung binh', 'Su dung toi da', 'Ghi chu'])
             
             if 'resource_usage_stats' in results:
                 stats = results['resource_usage_stats']
@@ -659,7 +659,7 @@ class PerformanceTester:
                     'CPU',
                     f"{stats['cpu']['avg']:.1f}%",
                     f"{stats['cpu_peak']['max']:.1f}%",
-                    'Phần trăm sử dụng CPU'
+                    'Phan tram su dung CPU'
                 ])
                 
                 writer.writerow([
@@ -671,7 +671,7 @@ class PerformanceTester:
                 
                 gpu_avg = stats['gpu']['avg']
                 gpu_max = stats['gpu_peak']['max']
-                gpu_note = "Không có GPU hoặc không sử dụng GPU"
+                gpu_note = "Khong co GPU hoac khong su dung GPU"
                 if gpu_avg > 0:
                     gpu_note = f"GPU Memory Peak: {stats['gpu_memory_peak']['max']:.1f}%"
                 
@@ -683,7 +683,7 @@ class PerformanceTester:
                 ])
     
     def save_results(self, test_name: str, metrics: Dict[str, Any], detailed_results: List[Dict[str, Any]]):
-        """Lưu kết quả test (backward compatibility)"""
+        """Luu ket qua test (backward compatibility)"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"performance_test_{test_name}_{timestamp}.json"
         
@@ -697,64 +697,64 @@ class PerformanceTester:
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(output, f, ensure_ascii=False, indent=2)
         
-        logger.info(f"📊 Kết quả test đã được lưu: {filename}")
+        logger.info(f"[RESULT] Ket qua test da duoc luu: {filename}")
         return filename
     
     def print_summary(self, test_name: str, metrics: Dict[str, Any]):
-        """In tóm tắt kết quả"""
+        """In tom tat ket qua"""
         print(f"\n{'='*60}")
-        print(f"📈 KẾT QUẢ THỬ NGHIỆM HIỆU SUẤT: {test_name.upper()}")
+        print(f"[CHART] KẾT QUẢ THỬ NGHIỆM HIỆU SUẤT: {test_name.upper()}")
         print(f"{'='*60}")
         
         if "error" in metrics:
-            print(f"❌ Lỗi: {metrics['error']}")
+            print(f"[ERROR] Loi: {metrics['error']}")
             return
         
-        print(f"📊 Tổng quan:")
-        print(f"   • Tổng requests: {metrics['total_requests']}")
-        print(f"   • Thành công: {metrics['successful_requests']}")
-        print(f"   • Thất bại: {metrics['failed_requests']}")
-        print(f"   • Tỷ lệ thành công: {metrics['success_rate']:.2f}%")
+        print(f"[SUMMARY] Tong quan:")
+        print(f"   - Tong requests: {metrics['total_requests']}")
+        print(f"   - Thanh cong: {metrics['successful_requests']}")
+        print(f"   - That bai: {metrics['failed_requests']}")
+        print(f"   - Ty le thanh cong: {metrics['success_rate']:.2f}%")
         
-        print(f"\n⏱️  Thời gian phản hồi (ms):")
+        print(f"\n[TIME] Thoi gian phan hoi (ms):")
         rt = metrics['response_time']
-        print(f"   • Trung bình: {rt['mean']:.2f}ms")
-        print(f"   • Trung vị: {rt['median']:.2f}ms")
-        print(f"   • Tối thiểu: {rt['min']:.2f}ms")
-        print(f"   • Tối đa: {rt['max']:.2f}ms")
-        print(f"   • P95: {rt['p95']:.2f}ms")
-        print(f"   • P99: {rt['p99']:.2f}ms")
+        print(f"   - Trung binh: {rt['mean']:.2f}ms")
+        print(f"   - Trung vi: {rt['median']:.2f}ms")
+        print(f"   - Toi thieu: {rt['min']:.2f}ms")
+        print(f"   - Toi da: {rt['max']:.2f}ms")
+        print(f"   - P95: {rt['p95']:.2f}ms")
+        print(f"   - P99: {rt['p99']:.2f}ms")
         
-        print(f"\n⚡ Xử lý:")
+        print(f"\n[FAST] Xu ly:")
         pt = metrics['processing_time']
-        print(f"   • Thời gian xử lý TB: {pt['mean']:.2f}ms")
+        print(f"   - Thoi gian xu ly TB: {pt['mean']:.2f}ms")
         
-        print(f"\n📝 Chất lượng câu trả lời:")
+        print(f"\n📝 Chat luong cau tra loi:")
         aq = metrics['answer_quality']
-        print(f"   • Độ dài câu trả lời TB: {aq['avg_length']:.0f} ký tự")
-        print(f"   • Độ tin cậy TB: {aq['avg_confidence']:.3f}")
+        print(f"   - Do dai cau tra loi TB: {aq['avg_length']:.0f} ky tu")
+        print(f"   - Do tin cay TB: {aq['avg_confidence']:.3f}")
         
         print(f"\n🚀 Throughput:")
-        print(f"   • Requests/giây: {metrics['throughput']['requests_per_second']:.2f}")
+        print(f"   - Requests/giay: {metrics['throughput']['requests_per_second']:.2f}")
 
     def print_response_time_summary(self, results: Dict[str, Any]):
-        """In tóm tắt kết quả thời gian phản hồi theo yêu cầu 4.3.3.1"""
+        """In tom tat ket qua thoi gian phan hoi theo yeu cau 4.3.3.1"""
         print(f"\n{'='*80}")
-        print(f"⏱️  KẾT QUẢ THỬ NGHIỆM THỜI GIAN PHẢN HỒI (4.3.3.1)")
+        print(f"[TIME]  KẾT QUẢ THỬ NGHIỆM THỜI GIAN PHẢN HỒI (4.3.3.1)")
         print(f"{'='*80}")
         
         if "error" in results:
-            print(f"❌ Lỗi: {results['error']}")
+            print(f"[ERROR] Loi: {results['error']}")
             return
         
-        print(f"📊 Tổng quan:")
-        print(f"   • Tổng câu hỏi test: {results['total_questions']}")
-        print(f"   • Câu hỏi thành công: {results['successful_questions']}")
-        print(f"   • Tỷ lệ thành công: {results['success_rate']:.1f}%")
+        print(f"[DATA] Tong quan:")
+        print(f"   - Tong cau hoi test: {results['total_questions']}")
+        print(f"   - Cau hoi thanh cong: {results['successful_questions']}")
+        print(f"   - Ty le thanh cong: {results['success_rate']:.1f}%")
         
         if "detailed_timing_stats" in results:
             stats = results["detailed_timing_stats"]
-            print(f"\n⏱️  THỜI GIAN PHẢN HỒI THEO TỪNG THÀNH PHẦN:")
+            print(f"\n[TIME]  THỜI GIAN PHẢN HỒI THEO TỪNG THÀNH PHẦN:")
             print("-" * 60)
             
             components = [
@@ -762,7 +762,7 @@ class PerformanceTester:
                 ("Vector Search", stats["vector_search"]),
                 ("Context Retrieval", stats["context_retrieval"]),
                 ("LLM Generation", stats["llm_generation"]),
-                ("Tổng thời gian", stats["total_processing"])
+                ("Tong thoi gian", stats["total_processing"])
             ]
             
             for component_name, component_stats in components:
@@ -773,18 +773,18 @@ class PerformanceTester:
                 print(f"{component_name:20} | TB: {avg_sec:6.3f}s | Min: {min_sec:6.3f}s | Max: {max_sec:6.3f}s")
     
     def print_resource_usage_summary(self, results: Dict[str, Any]):
-        """In tóm tắt kết quả sử dụng tài nguyên theo yêu cầu 4.3.3.2"""
+        """In tom tat ket qua su dung tai nguyen theo yeu cau 4.3.3.2"""
         print(f"\n{'='*80}")
         print(f"💻 KẾT QUẢ THỬ NGHIỆM SỬ DỤNG TÀI NGUYÊN (4.3.3.2)")
         print(f"{'='*80}")
         
         if "error" in results:
-            print(f"❌ Lỗi: {results['error']}")
+            print(f"[ERROR] Loi: {results['error']}")
             return
         
-        print(f"📊 Tổng quan:")
-        print(f"   • Số câu hỏi test: {results['test_questions']}")
-        print(f"   • Test thành công: {results['successful_tests']}")
+        print(f"[DATA] Tong quan:")
+        print(f"   - So cau hoi test: {results['test_questions']}")
+        print(f"   - Test thanh cong: {results['successful_tests']}")
         
         if "resource_usage_stats" in results:
             stats = results["resource_usage_stats"]
@@ -803,33 +803,33 @@ class PerformanceTester:
             if gpu_avg > 0:
                 print(f"GPU{'':15} | TB: {gpu_avg:6.1f}% | Max: {gpu_max:6.1f}% | Memory Peak: {stats['gpu_memory_peak']['max']:.1f}%")
             else:
-                print(f"GPU{'':15} | Không sử dụng GPU hoặc không có GPU")
+                print(f"GPU{'':15} | Khong su dung GPU hoac khong co GPU")
 
 async def main():
-    """Chạy tất cả các test hiệu suất theo yêu cầu 4.3.3.1 và 4.3.3.2"""
+    """Chay tat ca cac test hieu suat theo yeu cau 4.3.3.1 va 4.3.3.2"""
     async with PerformanceTester() as tester:
-        print("🔬 BẮT ĐẦU THỬ NGHIỆM HIỆU SUẤT HỆ THỐNG TRỢ LÝ ẢO AN TOÀN THÔNG TIN")
-        print("Theo yêu cầu 4.3.3.1 và 4.3.3.2")
+        print("[START] BAT DAU THU NGHIEM HIEU SUAT HE THONG TRO LY AO AN TOAN THONG TIN")
+        print("Theo yeu cau 4.3.3.1 va 4.3.3.2")
         print("="*80)
         
-        # Test 1: Thử nghiệm thời gian phản hồi (4.3.3.1)
-        print("\n🧪 Test 1: Thử nghiệm thời gian phản hồi (100 câu hỏi mẫu)")
+        # Test 1: Thu nghiem thoi gian phan hoi (4.3.3.1)
+        print("\n[TEST] Test 1: Thu nghiem thoi gian phan hoi (100 cau hoi mau)")
         response_time_results = await tester.run_100_questions_response_time_test()
         tester.print_response_time_summary(response_time_results)
         tester.save_response_time_results(response_time_results)
         
-        # Test 2: Thử nghiệm sử dụng tài nguyên (4.3.3.2)
-        print("\n🧪 Test 2: Thử nghiệm sử dụng tài nguyên")
+        # Test 2: Thu nghiem su dung tai nguyen (4.3.3.2)
+        print("\n[TEST] Test 2: Thu nghiem su dung tai nguyen")
         resource_usage_results = await tester.resource_usage_test()
         tester.print_resource_usage_summary(resource_usage_results)
         tester.save_resource_usage_results(resource_usage_results)
         
-        print(f"\n✅ HOÀN THÀNH THỬ NGHIỆM HIỆU SUẤT")
-        print("📁 Các files kết quả đã được tạo:")
-        print("   • JSON: response_time_test_TIMESTAMP.json")
-        print("   • CSV: response_time_table_TIMESTAMP.csv")
-        print("   • JSON: resource_usage_test_TIMESTAMP.json")
-        print("   • CSV: resource_usage_table_TIMESTAMP.csv")
+        print(f"\n[OK] HOÀN THÀNH THỬ NGHIỆM HIỆU SUẤT")
+        print("[FILE] Cac files ket qua da duoc tao:")
+        print("   - JSON: response_time_test_TIMESTAMP.json")
+        print("   - CSV: response_time_table_TIMESTAMP.csv")
+        print("   - JSON: resource_usage_test_TIMESTAMP.json")
+        print("   - CSV: resource_usage_table_TIMESTAMP.csv")
         print("="*80)
 
 if __name__ == "__main__":
