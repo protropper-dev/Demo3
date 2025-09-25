@@ -308,9 +308,11 @@ class PerformanceTester:
                     "total_response_time_ms": total_response_time,
                     
                     # Thong tin response
+                    "answer": response_data.get("answer", ""),  # Them cau tra loi day du
                     "answer_length": len(response_data.get("answer", "")),
                     "sources_count": response_data.get("total_sources", 0),
                     "confidence": response_data.get("confidence", 0),
+                    "sources": response_data.get("sources", []),  # Them nguon tai lieu
                     
                     # Tai nguyen su dung
                     "resource_usage": resource_stats
@@ -402,11 +404,13 @@ class PerformanceTester:
         
         # Test voi 10 cau hoi de danh gia tai nguyen
         test_questions = self.test_questions[:10]
+        all_results = []
         all_resource_data = []
         
         for i, question in enumerate(test_questions, 1):
             logger.info(f"Test tai nguyen cau hoi {i}/10...")
             result = await self.detailed_response_time_test(question)
+            all_results.append(result)  # Luu tat ca ket qua chi tiet
             
             if result.get("success", False) and result.get("resource_usage"):
                 all_resource_data.append(result["resource_usage"])
@@ -419,13 +423,15 @@ class PerformanceTester:
             return {
                 "test_questions": len(test_questions),
                 "successful_tests": len(all_resource_data),
-                "resource_usage_stats": resource_stats
+                "resource_usage_stats": resource_stats,
+                "all_results": all_results  # Them tat ca ket qua chi tiet
             }
         else:
             return {
                 "test_questions": len(test_questions),
                 "successful_tests": 0,
-                "error": "Khong co du lieu tai nguyen nao duoc thu thap"
+                "error": "Khong co du lieu tai nguyen nao duoc thu thap",
+                "all_results": all_results  # Them tat ca ket qua chi tiet
             }
     
     def _calculate_resource_stats(self, resource_data: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -602,7 +608,7 @@ class PerformanceTester:
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
-            # Header
+            # Header cho thong ke tong hop
             writer.writerow(['Thanh phan', 'Thoi gian trung binh (s)', 'Thoi gian toi thieu (s)', 'Thoi gian toi da (s)'])
             
             if 'detailed_timing_stats' in results:
@@ -643,13 +649,70 @@ class PerformanceTester:
                     f"{stats['total_processing']['min']/1000:.3f}",
                     f"{stats['total_processing']['max']/1000:.3f}"
                 ])
+                
+                # Them dong trong
+                writer.writerow([])
+                writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI'])
+                writer.writerow([])
+                
+                # Header cho chi tiet cau hoi
+                writer.writerow(['STT', 'Cau hoi', 'Do dai cau hoi', 'Cau tra loi', 'Embedding (ms)', 'Vector Search (ms)', 'Context Retrieval (ms)', 'LLM Generation (ms)', 'Tong Processing (ms)', 'Tong Response (ms)', 'So nguon', 'Confidence'])
+                
+                # Ghi chi tiet tung cau hoi
+                if 'all_results' in results:
+                    for i, result in enumerate(results['all_results'], 1):
+                        if result.get('success', False):
+                            writer.writerow([
+                                i,
+                                result['question'],
+                                result.get('question_length', 0),
+                                result.get('answer', '')[:200] + ('...' if len(result.get('answer', '')) > 200 else ''),
+                                f"{result.get('embedding_query_time_ms', 0):.2f}",
+                                f"{result.get('vector_search_time_ms', 0):.2f}",
+                                f"{result.get('context_retrieval_time_ms', 0):.2f}",
+                                f"{result.get('llm_generation_time_ms', 0):.2f}",
+                                f"{result.get('total_processing_time_ms', 0):.2f}",
+                                f"{result.get('total_response_time_ms', 0):.2f}",
+                                result.get('sources_count', 0),
+                                f"{result.get('confidence', 0):.2f}"
+                            ])
+        
+        # Tao file CSV chi tiet rieng cho cau hoi va cau tra loi
+        detail_csv_filename = filename.replace('.csv', '_detail.csv')
+        with open(detail_csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            
+            writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI - THOI GIAN PHAN HOI'])
+            writer.writerow(['STT', 'Cau hoi', 'Do dai cau hoi', 'Cau tra loi day du', 'Embedding (ms)', 'Vector Search (ms)', 'Context Retrieval (ms)', 'LLM Generation (ms)', 'Tong Processing (ms)', 'Tong Response (ms)', 'So nguon', 'Confidence', 'Nguon tai lieu'])
+            
+            if 'all_results' in results:
+                for i, result in enumerate(results['all_results'], 1):
+                    if result.get('success', False):
+                        sources_text = ', '.join([source.get('filename', '') for source in result.get('sources', [])])[:100]
+                        writer.writerow([
+                            i,
+                            result['question'],
+                            result.get('question_length', 0),
+                            result.get('answer', ''),
+                            f"{result.get('embedding_query_time_ms', 0):.2f}",
+                            f"{result.get('vector_search_time_ms', 0):.2f}",
+                            f"{result.get('context_retrieval_time_ms', 0):.2f}",
+                            f"{result.get('llm_generation_time_ms', 0):.2f}",
+                            f"{result.get('total_processing_time_ms', 0):.2f}",
+                            f"{result.get('total_response_time_ms', 0):.2f}",
+                            result.get('sources_count', 0),
+                            f"{result.get('confidence', 0):.2f}",
+                            sources_text
+                        ])
+        
+        logger.info(f"[DATA] File CSV chi tiet da duoc luu: {detail_csv_filename}")
     
     def _create_resource_usage_table_csv(self, results: Dict[str, Any], filename: str):
         """Tao bang CSV cho ket qua su dung tai nguyen"""
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
-            # Header
+            # Header cho thong ke tong hop
             writer.writerow(['Tai nguyen', 'Su dung trung binh', 'Su dung toi da', 'Ghi chu'])
             
             if 'resource_usage_stats' in results:
@@ -681,6 +744,61 @@ class PerformanceTester:
                     f"{gpu_max:.1f}%" if gpu_max > 0 else "0%",
                     gpu_note
                 ])
+                
+                # Them dong trong
+                writer.writerow([])
+                writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI'])
+                writer.writerow([])
+                
+                # Header cho chi tiet cau hoi
+                writer.writerow(['STT', 'Cau hoi', 'Cau tra loi', 'CPU Avg (%)', 'CPU Max (%)', 'RAM Avg (%)', 'RAM Max (%)', 'RAM Max (GB)', 'GPU Avg (%)', 'GPU Max (%)', 'GPU Memory Max (%)'])
+                
+                # Ghi chi tiet tung cau hoi
+                if 'all_results' in results:
+                    for i, result in enumerate(results['all_results'], 1):
+                        if result.get('success', False) and result.get('resource_usage'):
+                            resource = result['resource_usage']
+                            writer.writerow([
+                                i,
+                                result['question'],
+                                result.get('answer', '')[:200] + ('...' if len(result.get('answer', '')) > 200 else ''),
+                                f"{resource.get('cpu', {}).get('avg', 0):.1f}",
+                                f"{resource.get('cpu', {}).get('max', 0):.1f}",
+                                f"{resource.get('ram', {}).get('avg_percent', 0):.1f}",
+                                f"{resource.get('ram', {}).get('max_percent', 0):.1f}",
+                                f"{resource.get('ram', {}).get('max_used_gb', 0):.2f}",
+                                f"{resource.get('gpu', {}).get('avg_percent', 0):.1f}",
+                                f"{resource.get('gpu', {}).get('max_percent', 0):.1f}",
+                                f"{resource.get('gpu', {}).get('max_memory_percent', 0):.1f}"
+                            ])
+        
+        # Tao file CSV chi tiet rieng cho cau hoi va cau tra loi
+        detail_csv_filename = filename.replace('.csv', '_detail.csv')
+        with open(detail_csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            
+            writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI - SU DUNG TAI NGUYEN'])
+            writer.writerow(['STT', 'Cau hoi', 'Cau tra loi day du', 'CPU Avg (%)', 'CPU Max (%)', 'RAM Avg (%)', 'RAM Max (%)', 'RAM Max (GB)', 'GPU Avg (%)', 'GPU Max (%)', 'GPU Memory Max (%)'])
+            
+            if 'all_results' in results:
+                for i, result in enumerate(results['all_results'], 1):
+                    if result.get('success', False) and result.get('resource_usage'):
+                        resource = result['resource_usage']
+                        writer.writerow([
+                            i,
+                            result['question'],
+                            result.get('answer', ''),
+                            f"{resource.get('cpu', {}).get('avg', 0):.1f}",
+                            f"{resource.get('cpu', {}).get('max', 0):.1f}",
+                            f"{resource.get('ram', {}).get('avg_percent', 0):.1f}",
+                            f"{resource.get('ram', {}).get('max_percent', 0):.1f}",
+                            f"{resource.get('ram', {}).get('max_used_gb', 0):.2f}",
+                            f"{resource.get('gpu', {}).get('avg_percent', 0):.1f}",
+                            f"{resource.get('gpu', {}).get('max_percent', 0):.1f}",
+                            f"{resource.get('gpu', {}).get('max_memory_percent', 0):.1f}"
+                        ])
+        
+        logger.info(f"[DATA] File CSV chi tiet da duoc luu: {detail_csv_filename}")
     
     def save_results(self, test_name: str, metrics: Dict[str, Any], detailed_results: List[Dict[str, Any]]):
         """Luu ket qua test (backward compatibility)"""

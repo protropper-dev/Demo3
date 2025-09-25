@@ -1557,7 +1557,7 @@ class AccuracyTester:
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
-            # Header
+            # Header cho thong ke tong hop
             writer.writerow(['Tieu chi', 'Diem trung binh', 'Do lech chuan', 'Ghi chu'])
             
             if 'expert_evaluation_stats' in results:
@@ -1597,13 +1597,70 @@ class AccuracyTester:
                     f"{stats['currency']['std_dev']:.2f}",
                     'Thang diem 1-5'
                 ])
+                
+                # Them dong trong
+                writer.writerow([])
+                writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI'])
+                writer.writerow([])
+                
+                # Header cho chi tiet cau hoi
+                writer.writerow(['STT', 'Cau hoi', 'Ngon ngu', 'Danh muc', 'Cau tra loi', 'Diem Accuracy', 'Diem Completeness', 'Diem Relevance', 'Diem Clarity', 'Diem Currency', 'Diem tong the', 'Ghi chu chuyen gia'])
+                
+                # Ghi chi tiet tung cau hoi
+                if 'all_results' in results:
+                    for i, result in enumerate(results['all_results'], 1):
+                        if result.get('success', False) and 'expert_evaluation' in result:
+                            eval_data = result['expert_evaluation']
+                            writer.writerow([
+                                i,
+                                result['test_case'],
+                                result['language'],
+                                result['category'],
+                                result.get('answer', '')[:200] + ('...' if len(result.get('answer', '')) > 200 else ''),  # Gioi han do dai
+                                f"{eval_data.get('accuracy', 0):.2f}",
+                                f"{eval_data.get('completeness', 0):.2f}",
+                                f"{eval_data.get('relevance', 0):.2f}",
+                                f"{eval_data.get('clarity', 0):.2f}",
+                                f"{eval_data.get('currency', 0):.2f}",
+                                f"{eval_data.get('overall_score', 0):.2f}",
+                                result.get('expert_notes', '')
+                            ])
+        
+        # Tao file CSV chi tiet rieng cho cau hoi va cau tra loi
+        detail_csv_filename = filename.replace('.csv', '_detail.csv')
+        with open(detail_csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            
+            writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI - DANH GIA CHUYEN GIA'])
+            writer.writerow(['STT', 'Cau hoi', 'Ngon ngu', 'Danh muc', 'Cau tra loi day du', 'Diem Accuracy', 'Diem Completeness', 'Diem Relevance', 'Diem Clarity', 'Diem Currency', 'Diem tong the', 'Ghi chu chuyen gia'])
+            
+            if 'all_results' in results:
+                for i, result in enumerate(results['all_results'], 1):
+                    if result.get('success', False) and 'expert_evaluation' in result:
+                        eval_data = result['expert_evaluation']
+                        writer.writerow([
+                            i,
+                            result['test_case'],
+                            result['language'],
+                            result['category'],
+                            result.get('answer', ''),
+                            f"{eval_data.get('accuracy', 0):.2f}",
+                            f"{eval_data.get('completeness', 0):.2f}",
+                            f"{eval_data.get('relevance', 0):.2f}",
+                            f"{eval_data.get('clarity', 0):.2f}",
+                            f"{eval_data.get('currency', 0):.2f}",
+                            f"{eval_data.get('overall_score', 0):.2f}",
+                            result.get('expert_notes', '')
+                        ])
+        
+        logger.info(f"[DATA] File CSV chi tiet da duoc luu: {detail_csv_filename}")
     
     def _create_search_accuracy_table_csv(self, results: Dict[str, Any], filename: str):
         """Tao bang CSV cho ket qua do chinh xac tim kiem"""
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
-            # Header
+            # Header cho thong ke tong hop
             writer.writerow(['Metric', 'Gia tri', 'Ghi chu'])
             
             if 'overall_search_metrics' in results:
@@ -1626,13 +1683,64 @@ class AccuracyTester:
                     f"{metrics['f1_score']['mean']:.3f}",
                     'Trung binh dieu hoa cua Precision va Recall'
                 ])
+                
+                # Them dong trong
+                writer.writerow([])
+                writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI'])
+                writer.writerow([])
+                
+                # Header cho chi tiet cau hoi
+                writer.writerow(['STT', 'Cau hoi', 'Ngon ngu', 'Danh muc', 'Cau tra loi du kien', 'Cau tra loi thuc te', 'Precision', 'Recall', 'F1-Score'])
+                
+                # Ghi chi tiet tung cau hoi
+                if 'all_results' in results:
+                    for i, result in enumerate(results['all_results'], 1):
+                        if result.get('success', False) and 'search_metrics' in result:
+                            metrics_data = result['search_metrics']
+                            writer.writerow([
+                                i,
+                                result['test_case'],
+                                result['language'],
+                                result['category'],
+                                result.get('expected_answer', '')[:200] + ('...' if len(result.get('expected_answer', '')) > 200 else ''),
+                                result.get('actual_answer', '')[:200] + ('...' if len(result.get('actual_answer', '')) > 200 else ''),
+                                f"{metrics_data.get('precision', 0):.3f}",
+                                f"{metrics_data.get('recall', 0):.3f}",
+                                f"{metrics_data.get('f1_score', 0):.3f}"
+                            ])
+        
+        # Tao file CSV chi tiet rieng cho cau hoi va cau tra loi
+        detail_csv_filename = filename.replace('.csv', '_detail.csv')
+        with open(detail_csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            
+            writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI - DO CHINH XAC TIM KIEM'])
+            writer.writerow(['STT', 'Cau hoi', 'Ngon ngu', 'Danh muc', 'Cau tra loi du kien day du', 'Cau tra loi thuc te day du', 'Precision', 'Recall', 'F1-Score'])
+            
+            if 'all_results' in results:
+                for i, result in enumerate(results['all_results'], 1):
+                    if result.get('success', False) and 'search_metrics' in result:
+                        metrics_data = result['search_metrics']
+                        writer.writerow([
+                            i,
+                            result['test_case'],
+                            result['language'],
+                            result['category'],
+                            result.get('expected_answer', ''),
+                            result.get('actual_answer', ''),
+                            f"{metrics_data.get('precision', 0):.3f}",
+                            f"{metrics_data.get('recall', 0):.3f}",
+                            f"{metrics_data.get('f1_score', 0):.3f}"
+                        ])
+        
+        logger.info(f"[DATA] File CSV chi tiet da duoc luu: {detail_csv_filename}")
     
     def _create_multilingual_table_csv(self, results: Dict[str, Any], filename: str):
         """Tao bang CSV cho ket qua thu nghiem da ngon ngu"""
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
-            # Header
+            # Header cho thong ke tong hop
             writer.writerow(['Ngon ngu', 'So cau hoi', 'Do chinh xac', 'Thoi gian phan hoi (s)'])
             
             if 'multilingual_stats' in results:
@@ -1658,6 +1766,53 @@ class AccuracyTester:
                     f"{stats['mixed']['avg_accuracy']:.3f}",
                     f"{stats['mixed']['avg_response_time']/1000:.3f}"
                 ])
+                
+                # Them dong trong
+                writer.writerow([])
+                writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI'])
+                writer.writerow([])
+                
+                # Header cho chi tiet cau hoi
+                writer.writerow(['STT', 'Cau hoi', 'Ngon ngu', 'Danh muc', 'Ngon ngu phan hoi mong doi', 'Cau tra loi', 'Do chinh xac', 'Thoi gian phan hoi (ms)'])
+                
+                # Ghi chi tiet tung cau hoi
+                if 'all_results' in results:
+                    for i, result in enumerate(results['all_results'], 1):
+                        if result.get('success', False):
+                            writer.writerow([
+                                i,
+                                result['test_case'],
+                                result['language'],
+                                result['category'],
+                                result.get('expected_language', ''),
+                                result.get('answer', '')[:200] + ('...' if len(result.get('answer', '')) > 200 else ''),
+                                f"{result.get('accuracy', 0):.3f}",
+                                f"{result.get('response_time_ms', 0):.2f}"
+                            ])
+        
+        # Tao file CSV chi tiet rieng cho cau hoi va cau tra loi
+        detail_csv_filename = filename.replace('.csv', '_detail.csv')
+        with open(detail_csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            
+            writer.writerow(['CHI TIET CAU HOI VA CAU TRA LOI - DA NGON NGU'])
+            writer.writerow(['STT', 'Cau hoi', 'Ngon ngu', 'Danh muc', 'Ngon ngu phan hoi mong doi', 'Cau tra loi day du', 'Do chinh xac', 'Thoi gian phan hoi (ms)'])
+            
+            if 'all_results' in results:
+                for i, result in enumerate(results['all_results'], 1):
+                    if result.get('success', False):
+                        writer.writerow([
+                            i,
+                            result['test_case'],
+                            result['language'],
+                            result['category'],
+                            result.get('expected_language', ''),
+                            result.get('answer', ''),
+                            f"{result.get('accuracy', 0):.3f}",
+                            f"{result.get('response_time_ms', 0):.2f}"
+                        ])
+        
+        logger.info(f"[DATA] File CSV chi tiet da duoc luu: {detail_csv_filename}")
     
     def print_expert_evaluation_summary(self, results: Dict[str, Any]):
         """In tom tat ket qua danh gia chuyen gia"""

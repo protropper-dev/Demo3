@@ -61,28 +61,80 @@ python test_performance.py
 - **4.3.3.1 Thử nghiệm thời gian phản hồi**: 100 câu hỏi mẫu với độ dài khác nhau
 - **4.3.3.2 Thử nghiệm sử dụng tài nguyên**: Monitor CPU, RAM, GPU
 
-**Metrics đánh giá:**
-- **Thời gian từng thành phần**: Embedding Query, Vector Search, Context Retrieval, LLM Generation
-- **Thời gian tổng**: Min, max, mean cho từng thành phần
-- **Tài nguyên hệ thống**: CPU %, RAM %, GPU % (trung bình và tối đa)
-- **Bảng kết quả**: Xuất ra file CSV theo format yêu cầu
+**Metrics đánh giá chi tiết:**
 
-#### 2. Thử nghiệm Độ chính xác
+**4.3.3.1 Thời gian phản hồi:**
+- **Embedding Query**: Thời gian tạo embedding từ câu hỏi
+- **Vector Search**: Thời gian tìm kiếm vector tương tự trong database
+- **Context Retrieval**: Thời gian trích xuất ngữ cảnh từ tài liệu
+- **LLM Generation**: Thời gian sinh câu trả lời bằng LLM
+- **Total Response Time**: Tổng thời gian xử lý hoàn chỉnh
+
+**Thống kê cho mỗi thành phần:**
+- Thời gian trung bình (mean)
+- Thời gian tối thiểu (min)
+- Thời gian tối đa (max)
+- Thời gian trung vị (median)
+- Percentile 95 (P95)
+- Percentile 99 (P99)
+
+**4.3.3.2 Sử dụng tài nguyên:**
+- **CPU Usage**: % sử dụng CPU (trung bình, tối đa)
+- **RAM Usage**: % sử dụng RAM (trung bình, tối đa)
+- **GPU Usage**: % sử dụng GPU (trung bình, tối đa) - nếu có
+
+**Bảng kết quả CSV:**
+- `response_time_table_TIMESTAMP.csv`: Bảng thời gian theo format yêu cầu
+- `resource_usage_table_TIMESTAMP.csv`: Bảng tài nguyên theo format yêu cầu
+
+#### 2. Thử nghiệm Độ chính xác (Theo yêu cầu 4.3.4.1, 4.3.4.2, 4.3.4.3)
 ```bash
 python test_accuracy.py
 ```
 
-**Test cases bao gồm:**
-- 12 câu hỏi đa dạng về an toàn thông tin
-- Phân loại theo độ khó: easy, medium, hard
-- Phân loại theo domain: luat, english, vietnamese, technical
+**Các test bao gồm:**
+- **4.3.4.1 Thử nghiệm độ chính xác câu trả lời**: 50 câu hỏi chuẩn về an toàn thông tin
+- **4.3.4.2 Thử nghiệm độ chính xác tìm kiếm**: 30 câu hỏi với câu trả lời chuẩn đã biết
+- **4.3.4.3 Thử nghiệm đa ngôn ngữ**: 40 câu hỏi (15 tiếng Việt, 15 tiếng Anh, 10 hỗn hợp)
 
-**Metrics đánh giá:**
-- Keyword Coverage (tỷ lệ từ khóa quan trọng được đề cập)
-- Length Appropriateness (độ dài phù hợp)
-- Source Relevance (liên quan nguồn tài liệu)
-- Completeness (tính đầy đủ)
-- Technical Accuracy (chính xác kỹ thuật)
+**Metrics đánh giá chi tiết:**
+
+**4.3.4.1 Đánh giá bởi chuyên gia (5 tiêu chí, thang điểm 1-5):**
+- **Độ chính xác thông tin (Accuracy)**: Đánh giá tính chính xác của thông tin
+- **Tính đầy đủ (Completeness)**: Đánh giá độ đầy đủ của câu trả lời
+- **Tính liên quan (Relevance)**: Đánh giá mức độ liên quan đến câu hỏi
+- **Tính dễ hiểu (Clarity)**: Đánh giá tính rõ ràng, dễ hiểu
+- **Tính cập nhật (Currency)**: Đánh giá tính cập nhật của thông tin
+
+**Thống kê cho mỗi tiêu chí:**
+- Điểm trung bình (mean)
+- Độ lệch chuẩn (standard deviation)
+- Điểm tổng thể (overall score)
+
+**4.3.4.2 Độ chính xác tìm kiếm:**
+- **Precision**: Số câu trả lời chính xác / Tổng số câu trả lời
+- **Recall**: Số thông tin chính xác được tìm thấy / Tổng số thông tin chính xác
+- **F1-Score**: Harmonic mean của Precision và Recall
+
+**Thống kê tổng hợp:**
+- Precision trung bình
+- Recall trung bình
+- F1-Score trung bình
+
+**4.3.4.3 Thử nghiệm đa ngôn ngữ:**
+- **Tiếng Việt**: 15 câu hỏi, đánh giá độ chính xác và thời gian phản hồi
+- **Tiếng Anh**: 15 câu hỏi, đánh giá độ chính xác và thời gian phản hồi
+- **Hỗn hợp**: 10 câu hỏi, đánh giá khả năng xử lý đa ngôn ngữ
+
+**Thống kê theo ngôn ngữ:**
+- Số câu hỏi
+- Độ chính xác trung bình
+- Thời gian phản hồi trung bình (giây)
+
+**Bảng kết quả CSV:**
+- `expert_evaluation_table_TIMESTAMP.csv`: Bảng đánh giá chuyên gia theo format yêu cầu
+- `search_accuracy_table_TIMESTAMP.csv`: Bảng metrics tìm kiếm theo format yêu cầu
+- `multilingual_table_TIMESTAMP.csv`: Bảng kết quả đa ngôn ngữ theo format yêu cầu
 
 #### 3. Thử nghiệm Chất lượng Phản hồi
 ```bash
@@ -94,15 +146,92 @@ python test_response_quality.py
 - Phân loại theo user type: beginner, expert, administrator, student
 - Phân loại theo complexity: basic, intermediate, advanced
 
-**Metrics đánh giá:**
-- Coherence (tính mạch lạc)
-- Relevance (liên quan đến câu hỏi)
-- Helpfulness (tính hữu ích)
-- Clarity (rõ ràng, dễ hiểu)
-- Completeness (đầy đủ)
-- Tone Appropriateness (giọng điệu phù hợp)
-- Source Quality (chất lượng nguồn)
-- Structure (cấu trúc)
+**Metrics đánh giá chi tiết:**
+
+**Các tiêu chí đánh giá (thang điểm 1-5):**
+- **Coherence (Tính mạch lạc)**: Đánh giá tính logic và kết nối giữa các ý
+- **Relevance (Liên quan)**: Đánh giá mức độ liên quan đến câu hỏi
+- **Helpfulness (Tính hữu ích)**: Đánh giá mức độ hữu ích của câu trả lời
+- **Clarity (Rõ ràng)**: Đánh giá tính rõ ràng, dễ hiểu
+- **Completeness (Đầy đủ)**: Đánh giá độ đầy đủ của thông tin
+- **Tone Appropriateness (Giọng điệu phù hợp)**: Đánh giá tính phù hợp của giọng điệu
+- **Source Quality (Chất lượng nguồn)**: Đánh giá chất lượng nguồn tài liệu
+- **Structure (Cấu trúc)**: Đánh giá cấu trúc và tổ chức của câu trả lời
+
+**Thống kê cho mỗi tiêu chí:**
+- Điểm trung bình (mean)
+- Độ lệch chuẩn (standard deviation)
+- Phân tích theo user type
+- Phân tích theo complexity level
+
+**Phân tích theo đối tượng người dùng:**
+- Beginner: Đánh giá tính dễ hiểu và hướng dẫn cơ bản
+- Expert: Đánh giá độ chuyên sâu và tính kỹ thuật
+- Administrator: Đánh giá tính thực tiễn và khả thi
+- Student: Đánh giá tính giáo dục và học tập
+
+**Phân tích theo độ phức tạp:**
+- Basic: Câu hỏi cơ bản, đánh giá khả năng giải thích đơn giản
+- Intermediate: Câu hỏi trung bình, đánh giá khả năng phân tích
+- Advanced: Câu hỏi nâng cao, đánh giá khả năng chuyên sâu
+
+**Bảng kết quả CSV:**
+- `response_quality_table_TIMESTAMP.csv`: Bảng đánh giá chất lượng phản hồi
+
+## Tóm tắt Thông số Đánh giá
+
+### test_performance.py
+**Mục đích**: Đánh giá hiệu suất hệ thống theo yêu cầu 4.3.3.1 và 4.3.3.2
+
+**Thông số đánh giá chính:**
+- **Thời gian phản hồi**: 5 thành phần (Embedding, Vector Search, Context Retrieval, LLM Generation, Total)
+- **Sử dụng tài nguyên**: CPU %, RAM %, GPU % (trung bình và tối đa)
+- **Thống kê**: Mean, Min, Max, Median, P95, P99 cho mỗi thông số
+- **Số lượng test**: 100 câu hỏi đa dạng
+- **Output**: JSON chi tiết + CSV bảng kết quả
+
+### test_accuracy.py
+**Mục đích**: Đánh giá độ chính xác theo yêu cầu 4.3.4.1, 4.3.4.2, 4.3.4.3
+
+**Thông số đánh giá chính:**
+
+**4.3.4.1 Đánh giá chuyên gia:**
+- **5 tiêu chí**: Accuracy, Completeness, Relevance, Clarity, Currency (thang 1-5)
+- **Thống kê**: Mean, Standard Deviation cho mỗi tiêu chí
+- **Số lượng test**: 50 câu hỏi chuẩn
+
+**4.3.4.2 Độ chính xác tìm kiếm:**
+- **3 metrics**: Precision, Recall, F1-Score
+- **Thống kê**: Mean cho mỗi metric
+- **Số lượng test**: 30 câu hỏi với đáp án chuẩn
+
+**4.3.4.3 Đa ngôn ngữ:**
+- **3 ngôn ngữ**: Tiếng Việt (15), Tiếng Anh (15), Hỗn hợp (10)
+- **Thông số**: Độ chính xác, Thời gian phản hồi
+- **Thống kê**: Count, Avg Accuracy, Avg Response Time
+
+**Output**: JSON chi tiết + 3 file CSV bảng kết quả
+
+### test_response_quality.py
+**Mục đích**: Đánh giá chất lượng phản hồi của hệ thống
+
+**Thông số đánh giá chính:**
+- **8 tiêu chí**: Coherence, Relevance, Helpfulness, Clarity, Completeness, Tone, Source Quality, Structure (thang 1-5)
+- **Phân loại**: 4 user types (beginner, expert, administrator, student)
+- **Độ phức tạp**: 3 levels (basic, intermediate, advanced)
+- **Số lượng test**: 12 câu hỏi đa dạng
+- **Thống kê**: Mean, Standard Deviation, phân tích theo user type và complexity
+- **Output**: JSON chi tiết + CSV bảng kết quả
+
+### test_comprehensive.py
+**Mục đích**: Chạy tất cả các test và tạo báo cáo tổng hợp
+
+**Thông số đánh giá chính:**
+- **Điểm tổng thể**: 0.0 - 1.0 (tổng hợp từ 3 loại test)
+- **Chi tiết từng loại**: Performance Score, Accuracy Score, Quality Score
+- **Khuyến nghị**: Dựa trên kết quả để cải thiện hệ thống
+- **Thống kê thời gian**: Thời gian chạy từng test và tổng thời gian
+- **Output**: Log file + JSON báo cáo tổng hợp
 
 ## Kết quả và Báo cáo
 
@@ -110,15 +239,35 @@ python test_response_quality.py
 
 Mỗi lần chạy test sẽ tạo các files:
 
+**Performance Testing (test_performance.py):**
 ```
 ├── response_time_test_TIMESTAMP.json          # Kết quả thời gian phản hồi (4.3.3.1)
 ├── response_time_table_TIMESTAMP.csv          # Bảng thời gian phản hồi (CSV)
 ├── resource_usage_test_TIMESTAMP.json         # Kết quả sử dụng tài nguyên (4.3.3.2)
-├── resource_usage_table_TIMESTAMP.csv         # Bảng sử dụng tài nguyên (CSV)
-├── accuracy_test_results_TIMESTAMP.log  
-├── response_quality_test_results_TIMESTAMP.log
-├── comprehensive_test_results_TIMESTAMP.log
-└── comprehensive_test_results_TIMESTAMP.json
+└── resource_usage_table_TIMESTAMP.csv         # Bảng sử dụng tài nguyên (CSV)
+```
+
+**Accuracy Testing (test_accuracy.py):**
+```
+├── expert_evaluation_test_TIMESTAMP.json      # Kết quả đánh giá chuyên gia (4.3.4.1)
+├── expert_evaluation_table_TIMESTAMP.csv      # Bảng đánh giá chuyên gia (CSV)
+├── search_accuracy_test_TIMESTAMP.json        # Kết quả độ chính xác tìm kiếm (4.3.4.2)
+├── search_accuracy_table_TIMESTAMP.csv        # Bảng metrics tìm kiếm (CSV)
+├── multilingual_test_TIMESTAMP.json           # Kết quả đa ngôn ngữ (4.3.4.3)
+└── multilingual_table_TIMESTAMP.csv           # Bảng kết quả đa ngôn ngữ (CSV)
+```
+
+**Response Quality Testing (test_response_quality.py):**
+```
+├── response_quality_test_TIMESTAMP.json       # Kết quả chất lượng phản hồi
+├── response_quality_table_TIMESTAMP.csv       # Bảng đánh giá chất lượng (CSV)
+└── response_quality_test_results_TIMESTAMP.log # Log file chi tiết
+```
+
+**Comprehensive Testing (test_comprehensive.py):**
+```
+├── comprehensive_test_results_TIMESTAMP.log   # Log tổng hợp
+└── comprehensive_test_results_TIMESTAMP.json  # JSON báo cáo tổng hợp
 ```
 
 ### Format Báo cáo
@@ -135,9 +284,19 @@ Mỗi lần chạy test sẽ tạo các files:
 - Phân tích theo độ khó và domain
 - Timestamps và metadata
 
-#### Báo cáo CSV (Theo yêu cầu 4.3.3.1 và 4.3.3.2)
-- **response_time_table_TIMESTAMP.csv**: Bảng thời gian phản hồi theo format yêu cầu
-- **resource_usage_table_TIMESTAMP.csv**: Bảng sử dụng tài nguyên theo format yêu cầu
+#### Báo cáo CSV (Theo yêu cầu 4.3.3.1, 4.3.3.2, 4.3.4.1, 4.3.4.2, 4.3.4.3)
+
+**Performance Testing:**
+- **response_time_table_TIMESTAMP.csv**: Bảng thời gian phản hồi theo format yêu cầu 4.3.3.1
+- **resource_usage_table_TIMESTAMP.csv**: Bảng sử dụng tài nguyên theo format yêu cầu 4.3.3.2
+
+**Accuracy Testing:**
+- **expert_evaluation_table_TIMESTAMP.csv**: Bảng đánh giá chuyên gia theo format yêu cầu 4.3.4.1
+- **search_accuracy_table_TIMESTAMP.csv**: Bảng metrics tìm kiếm theo format yêu cầu 4.3.4.2
+- **multilingual_table_TIMESTAMP.csv**: Bảng kết quả đa ngôn ngữ theo format yêu cầu 4.3.4.3
+
+**Response Quality Testing:**
+- **response_quality_table_TIMESTAMP.csv**: Bảng đánh giá chất lượng phản hồi
 
 ## Cấu hình
 
